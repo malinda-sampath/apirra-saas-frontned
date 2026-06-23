@@ -59,9 +59,11 @@ const GetMethod: React.FC<Props> = ({ endpoint }) => {
           >
             GET
           </span>
-          <code className="font-mono text-sm text-gray-800">
-            {endpoint.path}
-          </code>
+          <span className="flex-1 min-w-0">
+            <code className="block truncate font-mono text-sm text-gray-800">
+              {endpoint.path}
+            </code>
+          </span>
         </div>
         {endpoint.summary && (
           <p className="text-sm text-gray-500">{endpoint.summary}</p>

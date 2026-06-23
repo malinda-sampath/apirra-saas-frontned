@@ -70,24 +70,29 @@ const ExplorerPage = () => {
 
           {/* RIGHT SIDE */}
           {selected && (
-            <div className="ml-8 flex flex-1 items-center">
+            <div className="ml-8 flex flex-1 items-center min-w-0">
               <div className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-1.5 shadow-sm transition hover:bg-gray-50">
+                {/* Badge */}
                 <span className="rounded-lg border border-blue-100 bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-blue-600">
                   Endpoint
                 </span>
 
                 <span className="text-gray-200">|</span>
 
-                <span
-                  className="text-gray-800 truncate w-auto max-w-xl"
-                  title={buildUrl(baseUrl, selected.path)}
-                >
-                  {buildUrl(baseUrl, selected.path)}
+                {/* URL wrapper MUST be flex-1 + min-w-0 */}
+                <span className="flex-1 min-w-0">
+                  <span
+                    className="block truncate font-mono text-sm text-gray-800"
+                    title={buildUrl(baseUrl, selected.path)}
+                  >
+                    {buildUrl(baseUrl, selected.path)}
+                  </span>
                 </span>
 
+                {/* Copy button fixed */}
                 <button
                   onClick={handleCopy}
-                  className="ml-auto flex items-center justify-center rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-blue-500"
+                  className="shrink-0 flex items-center justify-center rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-blue-500"
                   title="Copy endpoint"
                 >
                   <svg
@@ -106,10 +111,6 @@ const ExplorerPage = () => {
                       d="M8 16h8M8 12h8M9 8h6"
                     />
                   </svg>
-
-                  {copied && (
-                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-ping" />
-                  )}
                 </button>
               </div>
             </div>
