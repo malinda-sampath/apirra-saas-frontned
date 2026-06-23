@@ -1,4 +1,4 @@
-import PreLoginHome from "./pages/preLoginHome";
+import PreLoginHome from "./pages/ExplorerPage/PreLoginHome";
 
 function App() {
   return <PreLoginHome />;

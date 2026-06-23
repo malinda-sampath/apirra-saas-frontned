@@ -5,7 +5,3 @@ export const explorerApi = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-export const setExplorerBaseUrl = (baseUrl: string) => {
-  explorerApi.defaults.baseURL = baseUrl.replace(/\/$/, "");
-};

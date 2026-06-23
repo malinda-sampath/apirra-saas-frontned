@@ -1,7 +1,16 @@
+import axios from "axios";
 import type { OpenAPISpec } from "../../types/openApiType";
-import { explorerApi } from "./explorerApi";
 
-export const fetchOpenApiSpec = async (): Promise<OpenAPISpec> => {
-  const response = await explorerApi.get<OpenAPISpec>("/v3/api-docs");
+export const fetchOpenApiSpec = async (
+  baseUrl: string,
+): Promise<OpenAPISpec> => {
+  const client = axios.create({
+    baseURL: baseUrl.replace(/\/$/, ""),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const response = await client.get<OpenAPISpec>("/v3/api-docs");
   return response.data;
 };
