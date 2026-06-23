@@ -98,18 +98,26 @@ const ExplorerPage = () => {
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className={`h-4 w-4 transition ${
-                      copied ? "text-green-500 scale-110" : ""
+                      copied ? "scale-110 text-green-500" : ""
                     }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                     strokeWidth={2}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 16h8M8 12h8M9 8h6"
-                    />
+                    {copied ? (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    ) : (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M8 16h8M8 12h8M9 8h6"
+                      />
+                    )}
                   </svg>
                 </button>
               </div>
