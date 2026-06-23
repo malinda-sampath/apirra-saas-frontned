@@ -46,7 +46,7 @@ const GetMethod: React.FC<Props> = ({ endpoint }) => {
   const responses = endpoint.responses ?? {};
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full mt-10 space-y-4">
       {/* Header */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="mb-3 flex items-center gap-3">
@@ -59,9 +59,11 @@ const GetMethod: React.FC<Props> = ({ endpoint }) => {
           >
             GET
           </span>
-          <code className="font-mono text-sm text-gray-800">
-            {endpoint.path}
-          </code>
+          <span className="flex-1 min-w-0">
+            <code className="block truncate font-mono text-sm text-gray-800">
+              {endpoint.path}
+            </code>
+          </span>
         </div>
         {endpoint.summary && (
           <p className="text-sm text-gray-500">{endpoint.summary}</p>

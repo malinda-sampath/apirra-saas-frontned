@@ -6,10 +6,30 @@ import MethodRenderer from "../methods/MethodRenderer";
 
 const ExplorerPage = () => {
   const location = useLocation();
-
   const endpoints: ParsedApiMethod[] = location.state?.endpoints || [];
-
+  const baseUrl = location.state?.baseUrl || "";
   const [selected, setSelected] = useState<ParsedApiMethod | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!selected) return;
+
+    const fullUrl = buildUrl(baseUrl, selected.path);
+
+    await navigator.clipboard.writeText(fullUrl);
+
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  };
+
+  const buildUrl = (baseUrl: string, path: string) => {
+    if (!baseUrl) return path;
+
+    const cleanBase = baseUrl.replace(/\/$/, ""); // remove trailing /
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+    return `${cleanBase}${cleanPath}`;
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -20,32 +40,79 @@ const ExplorerPage = () => {
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 items-center border-b border-gray-200 bg-white px-6">
-          <button
-            onClick={() => window.history.back()}
-            className="mr-3 flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
+        <header className="flex h-18 items-center border-b border-gray-200 bg-white px-6">
+          {/* LEFT SIDE */}
+          <div className="flex items-center">
+            <button
+              onClick={() => window.history.back()}
+              className="mr-3 flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <h1 className="text-base font-semibold tracking-tight text-[28px] mt-2 mb-2 text-gray-900">
-            API<span className="text-blue-500">RRA</span>
-          </h1>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-gray-700"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+
+            <h1 className="text-base font-semibold tracking-tight text-[28px] text-gray-900">
+              API<span className="text-blue-500">RRA</span>
+            </h1>
+          </div>
+
+          {/* RIGHT SIDE */}
           {selected && (
-            <div className="ml-6 flex items-center gap-2 text-sm text-gray-500">
-              <span className="font-mono text-gray-700">{selected.path}</span>
+            <div className="ml-8 flex flex-1 items-center min-w-0">
+              <div className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-1.5 shadow-sm transition hover:bg-gray-50">
+                {/* Badge */}
+                <span className="rounded-lg border border-blue-100 bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-blue-600">
+                  Endpoint
+                </span>
+
+                <span className="text-gray-200">|</span>
+
+                {/* URL wrapper MUST be flex-1 + min-w-0 */}
+                <span className="flex-1 min-w-0">
+                  <span
+                    className="block truncate font-mono text-sm text-gray-800"
+                    title={buildUrl(baseUrl, selected.path)}
+                  >
+                    {buildUrl(baseUrl, selected.path)}
+                  </span>
+                </span>
+
+                {/* Copy button fixed */}
+                <button
+                  onClick={handleCopy}
+                  className="shrink-0 flex items-center justify-center rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-blue-500"
+                  title="Copy endpoint"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 transition ${
+                      copied ? "text-green-500 scale-110" : ""
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 16h8M8 12h8M9 8h6"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           )}
         </header>
