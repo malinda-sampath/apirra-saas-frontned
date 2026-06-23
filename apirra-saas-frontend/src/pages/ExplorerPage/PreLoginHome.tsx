@@ -29,7 +29,12 @@ const PreLoginHome = () => {
 
       // only navigate if we actually got data
       if (parsed && parsed.length > 0) {
-        navigate("/explorer", { state: { endpoints: parsed } });
+        navigate("/explorer", {
+          state: {
+            endpoints: parsed,
+            baseUrl,
+          },
+        });
       } else {
         throw new Error("No endpoints found in API spec");
       }

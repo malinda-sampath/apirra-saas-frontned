@@ -6,10 +6,30 @@ import MethodRenderer from "../methods/MethodRenderer";
 
 const ExplorerPage = () => {
   const location = useLocation();
-
   const endpoints: ParsedApiMethod[] = location.state?.endpoints || [];
-
+  const baseUrl = location.state?.baseUrl || "";
   const [selected, setSelected] = useState<ParsedApiMethod | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!selected) return;
+
+    const fullUrl = buildUrl(baseUrl, selected.path);
+
+    await navigator.clipboard.writeText(fullUrl);
+
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  };
+
+  const buildUrl = (baseUrl: string, path: string) => {
+    if (!baseUrl) return path;
+
+    const cleanBase = baseUrl.replace(/\/$/, ""); // remove trailing /
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+    return `${cleanBase}${cleanPath}`;
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -20,32 +40,78 @@ const ExplorerPage = () => {
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 items-center border-b border-gray-200 bg-white px-6">
-          <button
-            onClick={() => window.history.back()}
-            className="mr-3 flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
+        <header className="flex h-18 items-center border-b border-gray-200 bg-white px-6">
+          {/* LEFT SIDE */}
+          <div className="flex items-center">
+            <button
+              onClick={() => window.history.back()}
+              className="mr-3 flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <h1 className="text-base font-semibold tracking-tight text-[28px] mt-2 mb-2 text-gray-900">
-            API<span className="text-blue-500">RRA</span>
-          </h1>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-gray-700"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+
+            <h1 className="text-base font-semibold tracking-tight text-[28px] text-gray-900">
+              API<span className="text-blue-500">RRA</span>
+            </h1>
+          </div>
+
+          {/* RIGHT SIDE */}
           {selected && (
-            <div className="ml-6 flex items-center gap-2 text-sm text-gray-500">
-              <span className="font-mono text-gray-700">{selected.path}</span>
+            <div className="ml-auto flex items-center">
+              <div className="flex items-center gap-3 text-sm font-mono bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-gray-50 transition">
+                <span className="text-[11px] text-gray-400 uppercase tracking-wide">
+                  endpoint
+                </span>
+
+                <span className="text-gray-200">|</span>
+
+                <span
+                  className="text-gray-800 truncate max-w-[420px]"
+                  title={buildUrl(baseUrl, selected.path)}
+                >
+                  {buildUrl(baseUrl, selected.path)}
+                </span>
+
+                <button
+                  onClick={handleCopy}
+                  className="text-gray-400 hover:text-blue-500 transition relative"
+                  title="Copy endpoint"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 transition ${
+                      copied ? "text-green-500 scale-110" : ""
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 16h8M8 12h8M9 8h6"
+                    />
+                  </svg>
+
+                  {copied && (
+                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-ping" />
+                  )}
+                </button>
+              </div>
             </div>
           )}
         </header>

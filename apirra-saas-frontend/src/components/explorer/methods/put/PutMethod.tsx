@@ -41,7 +41,7 @@ const PutMethod: React.FC<Props> = ({ endpoint }) => {
   //   const responses = endpoint.responses ?? {};
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full mt-10 space-y-4">
       <div className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="mb-3 flex items-center gap-3">
           <span
