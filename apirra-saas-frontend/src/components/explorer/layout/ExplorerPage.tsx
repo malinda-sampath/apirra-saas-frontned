@@ -70,16 +70,16 @@ const ExplorerPage = () => {
 
           {/* RIGHT SIDE */}
           {selected && (
-            <div className="ml-auto flex items-center">
-              <div className="flex items-center gap-3 text-sm font-mono bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm hover:bg-gray-50 transition">
-                <span className="text-[11px] text-gray-400 uppercase tracking-wide">
-                  endpoint
+            <div className="ml-8 flex flex-1 items-center">
+              <div className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-1.5 shadow-sm transition hover:bg-gray-50">
+                <span className="rounded-lg border border-blue-100 bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-blue-600">
+                  Endpoint
                 </span>
 
                 <span className="text-gray-200">|</span>
 
                 <span
-                  className="text-gray-800 truncate max-w-[420px]"
+                  className="text-gray-800 truncate w-auto max-w-xl"
                   title={buildUrl(baseUrl, selected.path)}
                 >
                   {buildUrl(baseUrl, selected.path)}
@@ -87,7 +87,7 @@ const ExplorerPage = () => {
 
                 <button
                   onClick={handleCopy}
-                  className="text-gray-400 hover:text-blue-500 transition relative"
+                  className="ml-auto flex items-center justify-center rounded-md p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-blue-500"
                   title="Copy endpoint"
                 >
                   <svg
