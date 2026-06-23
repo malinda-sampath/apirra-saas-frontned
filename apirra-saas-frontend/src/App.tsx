@@ -1,7 +1,7 @@
-import PreLoginHome from "./pages/ExplorerPage/PreLoginHome";
+import Router from "./app/Router";
 
 function App() {
-  return <PreLoginHome />;
+  return <Router />;
 }
 
 export default App;

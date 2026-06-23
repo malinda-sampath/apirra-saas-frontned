@@ -1,13 +1,14 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import type { ParsedApiMethod } from "../../../utils/openApiParser";
 import MethodRenderer from "../methods/MethodRenderer";
 
-type Props = {
-  endpoints: ParsedApiMethod[];
-};
+const ExplorerPage = () => {
+  const location = useLocation();
 
-const ExplorerPage: React.FC<Props> = ({ endpoints }) => {
+  const endpoints: ParsedApiMethod[] = location.state?.endpoints || [];
+
   const [selected, setSelected] = useState<ParsedApiMethod | null>(null);
 
   return (

@@ -1,23 +1,27 @@
 import { useState } from "react";
 import { fetchOpenApiSpec } from "../../services/explorer/openApiService";
 import { parseOpenApi } from "../../utils/openApiParser";
-import ExplorerPage from "../../components/explorer/layout/ExplorerPage";
 import type { ParsedApiMethod } from "../../utils/openApiParser";
 import UserInput from "../../components/explorer/UserInput";
+import { useNavigate } from "react-router-dom";
 
 const PreLoginHome = () => {
-  const [endpoints, setEndpoints] = useState<ParsedApiMethod[]>([]);
   const [baseUrl, setBaseUrlState] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleLoad = async () => {
     setError("");
+
     try {
       setLoading(true);
+
       const spec = await fetchOpenApiSpec(baseUrl);
-      const parsed = parseOpenApi(spec);
-      setEndpoints(parsed);
+      const parsed: ParsedApiMethod[] = parseOpenApi(spec);
+
+      // ✅ CORRECT: navigate with state
+      navigate("/explorer", { state: { endpoints: parsed } });
     } catch (err) {
       console.error(err);
       setError("Failed to load API spec. Check the URL and try again.");
@@ -25,10 +29,6 @@ const PreLoginHome = () => {
       setLoading(false);
     }
   };
-
-  if (endpoints.length > 0) {
-    return <ExplorerPage endpoints={endpoints} />;
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
