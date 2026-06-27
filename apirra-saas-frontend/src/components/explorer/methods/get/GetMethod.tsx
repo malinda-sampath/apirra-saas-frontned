@@ -4,6 +4,7 @@ import type { ExecutePayload } from "../../../../types/executPayload";
 
 type Parameter = {
   name: string;
+  in: "query" | "path" | "header" | "cookie";
   required?: boolean;
   description?: string;
   type?: string;
@@ -33,29 +34,61 @@ const GetMethod: React.FC<Props> = ({
 }) => {
   const [response, setResponse] = useState<unknown>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [paramValues, setParamValues] = useState<Record<string, string>>({});
 
   const handleTry = async () => {
+    // Validate required parameters
+    const missing = params.find(
+      (p) => p.required && !paramValues[p.name]?.trim(),
+    );
+
+    if (missing) {
+      setResponse({
+        success: false,
+        error: `${missing.name} is required.`,
+      });
+      return;
+    }
+
     setIsRunning(true);
 
     try {
+      // Replace path parameters
+      let finalPath = endpoint.path;
+
+      params
+        .filter((p) => p.in === "path")
+        .forEach((p) => {
+          finalPath = finalPath.replace(
+            `{${p.name}}`,
+            encodeURIComponent(paramValues[p.name] ?? ""),
+          );
+        });
+
+      // Collect only query parameters
+      const queryParams = Object.fromEntries(
+        params
+          .filter((p) => p.in === "query")
+          .map((p) => [p.name, paramValues[p.name]])
+          .filter(([, value]) => value !== undefined && value !== ""),
+      );
+
       const res = await onExecute({
         method: "get",
-        path: endpoint.path,
-        baseUrl, // ✅ FIXED
-        queryParams: {},
+        path: finalPath,
+        baseUrl,
+        queryParams,
         headers: {},
       });
 
       setResponse(res);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Request failed";
-
       setResponse({
         success: false,
-        error: message,
+        error: err instanceof Error ? err.message : "Request failed",
       });
     } finally {
-      setIsRunning(false); // ✅ ALWAYS RESET
+      setIsRunning(false);
     }
   };
 
@@ -95,15 +128,61 @@ const GetMethod: React.FC<Props> = ({
             <div key={i} className="param-row">
               <code className="min-w-27.5 font-mono text-xs text-blue-700">
                 {p.name}
+                {p.required && (
+                  <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                    REQUIRED
+                  </span>
+                )}
               </code>
-              <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] text-gray-500">
-                {p.schema?.type ?? p.type ?? "any"}
-              </span>
-              {p.required && (
-                <span className="rounded bg-red-50 px-1.5 py-0.5 text-[11px] font-medium text-red-600">
-                  required
-                </span>
+              {p.schema?.type === "boolean" ? (
+                <select
+                  className="flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  value={paramValues[p.name] ?? ""}
+                  onChange={(e) =>
+                    setParamValues((prev) => ({
+                      ...prev,
+                      [p.name]: e.target.value,
+                    }))
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <option className="text-green-700" value="true">
+                      true
+                    </option>
+                    <option className="text-red-700" value="false">
+                      false
+                    </option>
+                  </div>
+                </select>
+              ) : (
+                <input
+                  type={
+                    p.schema?.type === "integer" || p.schema?.type === "number"
+                      ? "number"
+                      : "text"
+                  }
+                  placeholder={p.description ?? `Enter ${p.name}`}
+                  className="flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                  required={p.required}
+                  value={paramValues[p.name] ?? ""}
+                  onChange={(e) =>
+                    setParamValues((prev) => ({
+                      ...prev,
+                      [p.name]: e.target.value,
+                    }))
+                  }
+                />
               )}
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-blue-50 px-2 py-0.5 text-[11px] text-blue-700">
+                  {p.in}
+                </span>
+
+                <span className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
+                  {p.schema?.type ?? p.type ?? "any"}
+                </span>
+              </div>
+
               {p.description && (
                 <span className="truncate text-xs text-gray-400">
                   {p.description}
