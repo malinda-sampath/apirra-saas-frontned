@@ -3,13 +3,16 @@ import { useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import type { ParsedApiMethod } from "../../../utils/openApiParser";
 import MethodRenderer from "../methods/MethodRenderer";
+import { executeRequest } from "../../../services/explorer/requestExecutor";
+import type { ExecutePayload } from "../../../types/executPayload";
 
 const ExplorerPage = () => {
   const location = useLocation();
   const endpoints: ParsedApiMethod[] = location.state?.endpoints || [];
-  const baseUrl = location.state?.baseUrl || "";
+  const baseUrl: string = location.state?.baseUrl || "";
   const [selected, setSelected] = useState<ParsedApiMethod | null>(null);
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleCopy = async () => {
     if (!selected) return;
@@ -29,6 +32,30 @@ const ExplorerPage = () => {
     const cleanPath = path.startsWith("/") ? path : `/${path}`;
 
     return `${cleanBase}${cleanPath}`;
+  };
+
+  const handleExecute = async (payload: ExecutePayload) => {
+    setLoading(true);
+
+    try {
+      const res = await executeRequest({
+        baseUrl,
+        method: payload.method,
+        path: payload.path,
+        queryParams: payload.queryParams,
+        headers: payload.headers,
+        body: payload.body,
+      });
+
+      return res;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      const errorRes = { error: message };
+
+      return errorRes;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -127,7 +154,12 @@ const ExplorerPage = () => {
 
         <main className="flex-1 overflow-y-auto p-6">
           {selected ? (
-            <MethodRenderer endpoint={selected} />
+            <MethodRenderer
+              endpoint={selected}
+              onExecute={handleExecute}
+              loading={loading}
+              baseUrl={baseUrl}
+            />
           ) : (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50">

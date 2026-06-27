@@ -1,23 +1,46 @@
 import type { ParsedApiMethod } from "../../../utils/openApiParser";
-import DeleteMethod from "./delete/DeleteMethod";
+import type { ExecutePayload } from "../../../types/executPayload";
+// import DeleteMethod from "./delete/DeleteMethod";
 import GetMethod from "./get/GetMethod";
 import PostMethod from "./post/PostMethod";
-import PutMethod from "./put/PutMethod";
+// import PutMethod from "./put/PutMethod";
 
 type Props = {
   endpoint: ParsedApiMethod;
+  onExecute: (payload: ExecutePayload) => Promise<unknown>;
+  loading?: boolean;
+  baseUrl?: string;
 };
 
-const MethodRenderer: React.FC<Props> = ({ endpoint }) => {
+const MethodRenderer: React.FC<Props> = ({
+  endpoint,
+  onExecute,
+  loading,
+  baseUrl,
+}) => {
   switch (endpoint.method) {
     case "get":
-      return <GetMethod endpoint={endpoint} />;
+      return (
+        <GetMethod
+          endpoint={endpoint}
+          onExecute={onExecute}
+          loading={loading}
+          baseUrl={baseUrl ?? ""}
+        />
+      );
     case "post":
-      return <PostMethod endpoint={endpoint} />;
-    case "put":
-      return <PutMethod endpoint={endpoint} />;
-    case "delete":
-      return <DeleteMethod endpoint={endpoint} />;
+      return (
+        <PostMethod
+          endpoint={endpoint}
+          onExecute={onExecute}
+          loading={loading}
+          baseUrl={baseUrl ?? ""}
+        />
+      );
+    // case "put":
+    //   return <PutMethod endpoint={endpoint} onExecute={onExecute} />;
+    // case "delete":
+    //   return <DeleteMethod endpoint={endpoint} onExecute={onExecute} />;
     // case "patch":  return <PatchMethod endpoint={endpoint} />;
     default:
       return (

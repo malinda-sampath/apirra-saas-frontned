@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ParsedApiMethod } from "../../../../utils/openApiParser";
+import type { ExecutePayload } from "../../../../types/executPayload";
 
 type Parameter = {
   name: string;
@@ -11,10 +12,7 @@ type Parameter = {
   };
 };
 
-type ResponseObject = {
-  description?: string;
-};
-
+type ResponseObject = { description?: string };
 type Responses = Record<string, ResponseObject>;
 
 type Props = {
@@ -22,23 +20,42 @@ type Props = {
     parameters?: Parameter[];
     responses?: Responses;
   };
+  onExecute: (payload: ExecutePayload) => Promise<unknown>;
+  loading?: boolean;
+  baseUrl: string;
 };
 
-const GetMethod: React.FC<Props> = ({ endpoint }) => {
+const GetMethod: React.FC<Props> = ({
+  endpoint,
+  onExecute,
+  loading,
+  baseUrl,
+}) => {
+  const [response, setResponse] = useState<unknown>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [response, setResponse] = useState<string | null>(null);
 
   const handleTry = async () => {
     setIsRunning(true);
-    setResponse(null);
+
     try {
-      const res = await fetch(endpoint.path);
-      const text = await res.text();
-      setResponse(text);
-    } catch {
-      setResponse("Request failed.");
+      const res = await onExecute({
+        method: "get",
+        path: endpoint.path,
+        baseUrl, // ✅ FIXED
+        queryParams: {},
+        headers: {},
+      });
+
+      setResponse(res);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Request failed";
+
+      setResponse({
+        success: false,
+        error: message,
+      });
     } finally {
-      setIsRunning(false);
+      setIsRunning(false); // ✅ ALWAYS RESET
     }
   };
 
@@ -47,7 +64,7 @@ const GetMethod: React.FC<Props> = ({ endpoint }) => {
 
   return (
     <div className="w-full mt-10 space-y-4">
-      {/* Header */}
+      {/* HEADER */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5">
         <div className="mb-3 flex items-center gap-3">
           <span
@@ -136,10 +153,10 @@ const GetMethod: React.FC<Props> = ({ endpoint }) => {
       <div className="rounded-2xl border border-gray-200 bg-white p-5">
         <button
           onClick={handleTry}
-          disabled={isRunning}
+          disabled={loading || isRunning}
           className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
         >
-          {isRunning ? (
+          {loading || isRunning ? (
             <>
               <svg
                 className="h-3.5 w-3.5 animate-spin"
@@ -167,11 +184,13 @@ const GetMethod: React.FC<Props> = ({ endpoint }) => {
           )}
         </button>
 
-        {response && (
-          <pre className="mt-4 h-auto overflow-y-auto rounded-xl bg-gray-950 p-4 text-xs text-green-400">
-            {response}
-          </pre>
-        )}
+        <pre className="mt-4 min-h-64 max-h-128 overflow-y-auto rounded-xl bg-gray-950 p-4 text-xs text-green-400">
+          {response === null
+            ? ""
+            : typeof response === "string"
+              ? response
+              : JSON.stringify(response, null, 2)}
+        </pre>
       </div>
     </div>
   );
