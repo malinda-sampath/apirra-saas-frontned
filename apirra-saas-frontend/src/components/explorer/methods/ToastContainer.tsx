@@ -50,7 +50,7 @@ const ToastContainer: React.FC<ToastContainerProps> = ({
   };
 
   return (
-    <div className="fixed right-4 top-4 space-y-2 z-50">
+    <div className="fixed right-4 bottom-4 space-y-2 z-50">
       {toasts.map((toast) => (
         <div
           key={toast.id}
