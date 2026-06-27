@@ -21,6 +21,8 @@ export type HttpMethod = (typeof httpMethods)[number];
 export type ParsedApiMethod = {
   path: string;
   method: HttpMethod;
+
+  // Frequently used OpenAPI fields for display purposes
   operationId?: string;
   summary?: string;
   description?: string;
@@ -28,6 +30,9 @@ export type ParsedApiMethod = {
   requestBody?: OpenAPIV3.RequestBodyObject;
   responses: Record<string, OpenAPIV3.ResponseObject>;
   parameters?: OpenAPIV3.ParameterObject[];
+
+  // Entire OpenAPI operation object for advanced use cases
+  operation: OpenAPIV3.OperationObject;
 };
 
 /**
@@ -74,6 +79,7 @@ const extractMethods = (
       responses:
         (operation.responses as Record<string, OpenAPIV3.ResponseObject>) || {},
       parameters: (operation.parameters as OpenAPIV3.ParameterObject[]) ?? [],
+      operation,
     });
   });
 
