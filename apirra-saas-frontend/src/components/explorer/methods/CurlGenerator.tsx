@@ -23,18 +23,26 @@ const CurlGenerator: React.FC<CurlGeneratorProps> = ({
   onToggle,
 }) => {
   const curlCommand = useMemo(() => {
-    // Build the full URL with query parameters
+    const cleanBaseUrl = (url: string) => {
+      try {
+        const u = new URL(url);
+
+        return `${u.protocol}//${u.host}`;
+      } catch {
+        return url;
+      }
+    };
+    const base = cleanBaseUrl(baseUrl);
+
     const queryString =
       Object.keys(queryParams).length > 0
         ? "?" + new URLSearchParams(queryParams).toString()
         : "";
 
-    const fullUrl = baseUrl + path + queryString;
+    const fullUrl = `${base}${path}${queryString}`;
 
-    // Build the cURL command
-    let curl = `curl -X ${method} "${fullUrl}"`;
+    let curl = `curl -X ${method.toUpperCase()} "${fullUrl}"`;
 
-    // Add headers if present
     Object.entries(headers).forEach(([key, value]) => {
       if (value) {
         curl += ` \\\n  -H "${key}: ${value}"`;

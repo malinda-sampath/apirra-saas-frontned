@@ -180,7 +180,7 @@ const GetMethodEnhanced: React.FC<GetMethodEnhancedProps> = ({
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-4">
       {/* Header */}
-      <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-6">
+      <div className="rounded-xl border border-gray-200 bg-linear-to-br from-white to-gray-50 p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-3">
