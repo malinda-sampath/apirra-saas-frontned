@@ -22,7 +22,7 @@ const MethodRenderer: React.FC<Props> = ({
     case "get":
       return (
         <GetMethod
-          endpoint={endpoint}
+          endpoint={endpoint as Parameters<typeof GetMethod>[0]["endpoint"]}
           onExecute={onExecute}
           loading={loading}
           baseUrl={baseUrl ?? ""}

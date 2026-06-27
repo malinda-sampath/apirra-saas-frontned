@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ParameterSection from "../ParameterSection";
 import CurlGenerator from "../CurlGenerator";
 import ResponseDisplay from "../ResponseDisplay";
@@ -14,7 +14,7 @@ import type {
   ParsedApiMethod,
 } from "../../../../types/methodTypes";
 
-type GetMethodEnhancedProps = {
+type GetMethodProps = {
   endpoint: ParsedApiMethod & {
     parameters?: Parameter[];
     responses?: Responses;
@@ -24,7 +24,7 @@ type GetMethodEnhancedProps = {
   baseUrl: string;
 };
 
-const GetMethodEnhanced: React.FC<GetMethodEnhancedProps> = ({
+const GetMethod: React.FC<GetMethodProps> = ({
   endpoint,
   onExecute,
   loading,
@@ -175,10 +175,23 @@ const GetMethodEnhanced: React.FC<GetMethodEnhancedProps> = ({
       .filter(([, value]) => value !== undefined && value !== ""),
   );
 
-  // ==================== Render ====================
+  const resetState = () => {
+    setResponse(null);
+    setParamValues({});
+    setActiveTab("request");
+  };
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      resetState();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [endpoint.path]);
+  // ==================== Render ==================
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 p-4">
+    <div className="mx-auto w-full max-w-auto space-y-6 p-4">
       {/* Header */}
       <div className="rounded-xl border border-gray-200 bg-linear-to-br from-white to-gray-50 p-6">
         <div className="flex items-start justify-between gap-4">
@@ -373,4 +386,4 @@ const GetMethodEnhanced: React.FC<GetMethodEnhancedProps> = ({
   );
 };
 
-export default GetMethodEnhanced;
+export default GetMethod;
