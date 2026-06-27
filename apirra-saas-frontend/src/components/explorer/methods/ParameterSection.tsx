@@ -1,5 +1,5 @@
 import React from "react";
-import ParameterInput from "../ParameterInput";
+import ParameterInput from "./ParameterInput";
 import type { Parameter } from "../../../types/methodTypes";
 
 type ParameterSectionProps = {

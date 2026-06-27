@@ -29,6 +29,16 @@ const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
     );
   }
 
+  const cleanBaseUrl = (url: string) => {
+    try {
+      const u = new URL(url);
+
+      return `${u.protocol}//${u.host}`;
+    } catch {
+      return url;
+    }
+  };
+
   const responseText =
     typeof response === "string" ? response : JSON.stringify(response, null, 2);
 
@@ -80,7 +90,7 @@ const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
               URL
             </p>
             <code className="block break-all rounded bg-white p-2 font-mono text-xs text-gray-900">
-              {baseUrl}
+              {cleanBaseUrl(baseUrl)}
               {path}
             </code>
           </div>

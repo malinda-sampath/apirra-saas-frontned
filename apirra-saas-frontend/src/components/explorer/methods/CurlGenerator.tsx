@@ -32,6 +32,7 @@ const CurlGenerator: React.FC<CurlGeneratorProps> = ({
         return url;
       }
     };
+
     const base = cleanBaseUrl(baseUrl);
 
     const queryString =
