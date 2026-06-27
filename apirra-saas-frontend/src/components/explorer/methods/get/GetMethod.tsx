@@ -1,22 +1,20 @@
 import { useState } from "react";
-import type { ParsedApiMethod } from "../../../../utils/openApiParser";
-import type { ExecutePayload } from "../../../../types/executPayload";
+import ParameterSection from "../ParameterSection";
+import CurlGenerator from "../CurlGenerator";
+import ResponseDisplay from "../ResponseDisplay";
+import RequestHistory from "../RequestHistory";
+import type { HistoryItem } from "../RequestHistory";
+import ToastContainer from "../ToastContainer";
+import type {
+  Parameter,
+  ResponseObject,
+  Responses,
+  Toast,
+  ExecutePayload,
+  ParsedApiMethod,
+} from "../../../../types/methodTypes";
 
-type Parameter = {
-  name: string;
-  in: "query" | "path" | "header" | "cookie";
-  required?: boolean;
-  description?: string;
-  type?: string;
-  schema?: {
-    type?: string;
-  };
-};
-
-type ResponseObject = { description?: string };
-type Responses = Record<string, ResponseObject>;
-
-type Props = {
+type GetMethodEnhancedProps = {
   endpoint: ParsedApiMethod & {
     parameters?: Parameter[];
     responses?: Responses;
@@ -26,15 +24,66 @@ type Props = {
   baseUrl: string;
 };
 
-const GetMethod: React.FC<Props> = ({
+const GetMethodEnhanced: React.FC<GetMethodEnhancedProps> = ({
   endpoint,
   onExecute,
   loading,
   baseUrl,
 }) => {
+  // State Management
   const [response, setResponse] = useState<unknown>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [showCurl, setShowCurl] = useState(false);
+  const [activeTab, setActiveTab] = useState<"request" | "response">(
+    "response",
+  );
+  const [requestHistory, setRequestHistory] = useState<HistoryItem[]>([]);
+
+  // Constants
+  const params = endpoint.parameters ?? [];
+  const responses = endpoint.responses ?? {};
+
+  // Group parameters by location
+  const groupedParams = {
+    path: params.filter((p) => p.in === "path"),
+    query: params.filter((p) => p.in === "query"),
+    header: params.filter((p) => p.in === "header"),
+    cookie: params.filter((p) => p.in === "cookie"),
+  };
+
+  // ==================== Handlers ====================
+
+  const addToast = (
+    message: string,
+    type: "success" | "error" | "info" = "info",
+  ) => {
+    const id = crypto.randomUUID();
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    addToast("Copied to clipboard", "success");
+  };
+
+  const handleParamChange = (paramName: string, value: string) => {
+    setParamValues((prev) => ({
+      ...prev,
+      [paramName]: value,
+    }));
+  };
+
+  const handleReset = () => {
+    setParamValues({});
+    setResponse(null);
+    addToast("Parameters cleared", "info");
+  };
 
   const handleTry = async () => {
     // Validate required parameters
@@ -43,6 +92,7 @@ const GetMethod: React.FC<Props> = ({
     );
 
     if (missing) {
+      addToast(`${missing.name} is required`, "error");
       setResponse({
         success: false,
         error: `${missing.name} is required.`,
@@ -51,24 +101,22 @@ const GetMethod: React.FC<Props> = ({
     }
 
     setIsRunning(true);
+    setActiveTab("response");
 
     try {
       // Replace path parameters
       let finalPath = endpoint.path;
 
-      params
-        .filter((p) => p.in === "path")
-        .forEach((p) => {
-          finalPath = finalPath.replace(
-            `{${p.name}}`,
-            encodeURIComponent(paramValues[p.name] ?? ""),
-          );
-        });
+      groupedParams.path.forEach((p) => {
+        finalPath = finalPath.replace(
+          `{${p.name}}`,
+          encodeURIComponent(paramValues[p.name] ?? ""),
+        );
+      });
 
-      // Collect only query parameters
+      // Collect query parameters
       const queryParams = Object.fromEntries(
-        params
-          .filter((p) => p.in === "query")
+        groupedParams.query
           .map((p) => [p.name, paramValues[p.name]])
           .filter(([, value]) => value !== undefined && value !== ""),
       );
@@ -82,197 +130,247 @@ const GetMethod: React.FC<Props> = ({
       });
 
       setResponse(res);
+
+      // Add to history
+      setRequestHistory((prev) => [
+        {
+          timestamp: new Date().toLocaleTimeString(),
+          path: finalPath,
+          params: paramValues,
+        },
+        ...prev.slice(0, 9), // Keep last 10 requests
+      ]);
+
+      addToast("Request successful", "success");
     } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Request failed";
       setResponse({
         success: false,
-        error: err instanceof Error ? err.message : "Request failed",
+        error: errorMsg,
       });
+      addToast(errorMsg, "error");
     } finally {
       setIsRunning(false);
     }
   };
 
-  const params = endpoint.parameters ?? [];
-  const responses = endpoint.responses ?? {};
+  const handleRestoreFromHistory = (params: Record<string, string>) => {
+    setParamValues(params);
+    addToast("Parameters restored", "info");
+  };
+
+  // ==================== Build Final Path for cURL ====================
+
+  let finalPathForCurl = endpoint.path;
+  groupedParams.path.forEach((p) => {
+    finalPathForCurl = finalPathForCurl.replace(
+      `{${p.name}}`,
+      encodeURIComponent(paramValues[p.name] ?? ""),
+    );
+  });
+
+  const queryParams = Object.fromEntries(
+    groupedParams.query
+      .map((p) => [p.name, paramValues[p.name]])
+      .filter(([, value]) => value !== undefined && value !== ""),
+  );
+
+  // ==================== Render ====================
 
   return (
-    <div className="w-full mt-10 space-y-4">
-      {/* HEADER */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5">
-        <div className="mb-3 flex items-center gap-3">
-          <span
-            className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest"
-            style={{
-              background: "var(--color-get)",
-              color: "var(--color-get-text)",
-            }}
-          >
-            GET
-          </span>
-          <span className="flex-1 min-w-0">
-            <code className="block truncate font-mono text-sm text-gray-800">
-              {endpoint.path}
-            </code>
-          </span>
-        </div>
-        {endpoint.summary && (
-          <p className="text-sm text-gray-500">{endpoint.summary}</p>
-        )}
-      </div>
-
-      {/* Parameters */}
-      {params.length > 0 && (
-        <div className="section-card">
-          <p className="section-label">Parameters</p>
-          {params.map((p: Parameter, i: number) => (
-            <div key={i} className="param-row">
-              <code className="min-w-27.5 font-mono text-xs text-blue-700">
-                {p.name}
-                {p.required && (
-                  <span className="ml-2 rounded bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                    REQUIRED
-                  </span>
-                )}
-              </code>
-              {p.schema?.type === "boolean" ? (
-                <select
-                  className="flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                  value={paramValues[p.name] ?? ""}
-                  onChange={(e) =>
-                    setParamValues((prev) => ({
-                      ...prev,
-                      [p.name]: e.target.value,
-                    }))
-                  }
-                >
-                  <div className="flex items-center gap-2">
-                    <option className="text-green-700" value="true">
-                      true
-                    </option>
-                    <option className="text-red-700" value="false">
-                      false
-                    </option>
-                  </div>
-                </select>
-              ) : (
-                <input
-                  type={
-                    p.schema?.type === "integer" || p.schema?.type === "number"
-                      ? "number"
-                      : "text"
-                  }
-                  placeholder={p.description ?? `Enter ${p.name}`}
-                  className="flex-1 min-w-0 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-gray-800 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                  required={p.required}
-                  value={paramValues[p.name] ?? ""}
-                  onChange={(e) =>
-                    setParamValues((prev) => ({
-                      ...prev,
-                      [p.name]: e.target.value,
-                    }))
-                  }
-                />
-              )}
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-blue-50 px-2 py-0.5 text-[11px] text-blue-700">
-                  {p.in}
-                </span>
-
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">
-                  {p.schema?.type ?? p.type ?? "any"}
-                </span>
-              </div>
-
-              {p.description && (
-                <span className="truncate text-xs text-gray-400">
-                  {p.description}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Responses */}
-      {Object.keys(responses).length > 0 && (
-        <div className="section-card">
-          <p className="section-label">Responses</p>
-          {Object.entries(responses).map(
-            ([code, resp]: [string, ResponseObject]) => {
-              const isSuccess = code.startsWith("2");
-              return (
-                <div key={code} className="param-row">
-                  <span
-                    className="rounded px-2 py-0.5 text-xs font-bold"
-                    style={
-                      isSuccess
-                        ? {
-                            background: "var(--color-post)",
-                            color: "var(--color-post-text)",
-                          }
-                        : {
-                            background: "var(--color-delete)",
-                            color: "var(--color-delete-text)",
-                          }
-                    }
-                  >
-                    {code}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {resp.description ?? "—"}
-                  </span>
-                </div>
-              );
-            },
-          )}
-        </div>
-      )}
-
-      {/* Try it out */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5">
-        <button
-          onClick={handleTry}
-          disabled={loading || isRunning}
-          className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
-        >
-          {loading || isRunning ? (
-            <>
-              <svg
-                className="h-3.5 w-3.5 animate-spin"
-                viewBox="0 0 24 24"
-                fill="none"
+    <div className="mx-auto w-full max-w-4xl space-y-6 p-4">
+      {/* Header */}
+      <div className="rounded-xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-3">
+              <span
+                className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest text-white"
+                style={{ background: "var(--color-get, #10b981)" }}
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              Sending…
-            </>
-          ) : (
-            <>▶ Try it out</>
-          )}
-        </button>
-
-        <pre className="mt-4 min-h-64 max-h-128 overflow-y-auto rounded-xl bg-gray-950 p-4 text-xs text-green-400">
-          {response === null
-            ? ""
-            : typeof response === "string"
-              ? response
-              : JSON.stringify(response, null, 2)}
-        </pre>
+                GET
+              </span>
+              <code className="truncate font-mono text-sm font-semibold text-gray-900">
+                {endpoint.path}
+              </code>
+            </div>
+            {endpoint.summary && (
+              <p className="text-sm text-gray-600">{endpoint.summary}</p>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Parameters Section */}
+      {params.length > 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Parameters</h2>
+            <button
+              onClick={handleReset}
+              className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-200 disabled:opacity-50"
+              disabled={
+                isRunning || loading || Object.keys(paramValues).length === 0
+              }
+              aria-label="Clear all parameters"
+            >
+              Clear All
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {groupedParams.path.length > 0 && (
+              <ParameterSection
+                title="Path Parameters"
+                params={groupedParams.path}
+                paramValues={paramValues}
+                onParamChange={handleParamChange}
+                disabled={isRunning}
+                loading={loading}
+              />
+            )}
+            {groupedParams.query.length > 0 && (
+              <ParameterSection
+                title="Query Parameters"
+                params={groupedParams.query}
+                paramValues={paramValues}
+                onParamChange={handleParamChange}
+                disabled={isRunning}
+                loading={loading}
+              />
+            )}
+            {groupedParams.header.length > 0 && (
+              <ParameterSection
+                title="Headers"
+                params={groupedParams.header}
+                paramValues={paramValues}
+                onParamChange={handleParamChange}
+                disabled={isRunning}
+                loading={loading}
+              />
+            )}
+            {groupedParams.cookie.length > 0 && (
+              <ParameterSection
+                title="Cookies"
+                params={groupedParams.cookie}
+                paramValues={paramValues}
+                onParamChange={handleParamChange}
+                disabled={isRunning}
+                loading={loading}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Responses Documentation */}
+      {Object.keys(responses).length > 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6">
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">
+            Response Status Codes
+          </h2>
+          <div className="space-y-2">
+            {Object.entries(responses).map(
+              ([code, resp]: [string, ResponseObject]) => {
+                const isSuccess = code.startsWith("2");
+                return (
+                  <div
+                    key={code}
+                    className="flex items-start gap-3 rounded-lg bg-gray-50 p-3"
+                  >
+                    <span
+                      className="rounded px-2.5 py-0.5 text-xs font-bold text-white"
+                      style={{
+                        background: isSuccess
+                          ? "var(--color-post, #3b82f6)"
+                          : "var(--color-delete, #ef4444)",
+                      }}
+                    >
+                      {code}
+                    </span>
+                    <p className="text-sm text-gray-700">
+                      {resp.description ?? "No description"}
+                    </p>
+                  </div>
+                );
+              },
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Request Execution Section */}
+      <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            onClick={handleTry}
+            disabled={loading || isRunning}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60 sm:flex-none"
+            aria-label={isRunning ? "Sending request" : "Send request"}
+          >
+            {loading || isRunning ? (
+              <>
+                <svg
+                  className="h-4 w-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                Sending…
+              </>
+            ) : (
+              <>▶ Send Request</>
+            )}
+          </button>
+        </div>
+
+        {/* cURL Generator Component */}
+        <CurlGenerator
+          method="GET"
+          baseUrl={baseUrl}
+          path={finalPathForCurl}
+          queryParams={queryParams}
+          headers={{}}
+          onCopy={copyToClipboard}
+          isVisible={showCurl}
+          onToggle={() => setShowCurl(!showCurl)}
+        />
+
+        {/* Response Display Component */}
+        <ResponseDisplay
+          response={response}
+          baseUrl={baseUrl}
+          path={finalPathForCurl}
+          paramValues={paramValues}
+          onCopy={copyToClipboard}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
+
+      {/* Request History Component */}
+      <RequestHistory
+        history={requestHistory}
+        onSelectRequest={handleRestoreFromHistory}
+      />
+
+      {/* Toast Container Component */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 };
 
-export default GetMethod;
+export default GetMethodEnhanced;
