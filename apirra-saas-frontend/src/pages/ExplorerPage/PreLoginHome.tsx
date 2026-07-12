@@ -29,7 +29,12 @@ const PreLoginHome = () => {
 
       // only navigate if we actually got data
       if (parsed && parsed.length > 0) {
-        navigate("/explorer", { state: { endpoints: parsed } });
+        navigate("/explorer", {
+          state: {
+            endpoints: parsed,
+            baseUrl,
+          },
+        });
       } else {
         throw new Error("No endpoints found in API spec");
       }
@@ -64,15 +69,15 @@ const PreLoginHome = () => {
             {/* Input section */}
             <div>
               <UserInput
-                label="Base API URL"
-                placeholder="http://localhost:8081/"
+                label="OpenAPI Specification URL"
+                placeholder="http://localhost:8081/v3/api-docs"
                 value={baseUrl}
                 onChange={(e) => setBaseUrlState(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleLoad()}
               />
 
               <p className="mt-2 text-xs text-gray-400">
-                Example: http://localhost:8081/ or https://api.yourservice.com/
+                Example: http://localhost:8081/v3/api-docs
               </p>
             </div>
 

@@ -27,44 +27,70 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
 
   return (
     <aside className="flex w-80 flex-col border-r border-gray-200 bg-white">
+      {/* SEARCH + HEADER */}
       <div className="border-b border-gray-100 px-4 py-3">
-        <p className="text-[12px] mt-2 mb-2 font-bold uppercase tracking-widest text-gray-600">
-          Endpoints
-        </p>
+        {/* <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">
+          API Endpoints
+        </p> */}
+
+        <input
+          className="w-full mt-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 placeholder-gray-400 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+          placeholder="Search endpoints..."
+        />
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-2 py-4">
+      {/* LIST */}
+      <nav className="flex-1 overflow-y-auto py-2">
         {Object.entries(grouped).map(([tag, eps]) => (
-          <div key={tag} className="mb-5">
-            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-              {tag}
-            </p>
-            {eps.map((ep, i) => {
-              const isActive = selected === ep;
-              return (
-                <button
-                  key={i}
-                  onClick={() => onSelect(ep)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors ${
-                    isActive ? "bg-blue-50" : "hover:bg-gray-50"
+          <div key={tag} className="mb-6">
+            {/* GROUP HEADER */}
+            <div className="px-3 mb-2">
+              <div className="flex items-center justify-between">
+                <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-700">
+                  {tag} ({eps.length})
+                </p>
+              </div>
+            </div>
+
+            {/* ITEMS */}
+            <div className="space-y-1 px-2">
+              {eps.map((ep, i) => {
+                const isActive = selected === ep;
+
+                return (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      onSelect(ep);
+                    }}
+                    className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors
+                  ${
+                    isActive
+                      ? "bg-blue-50 border-l-4 border-blue-500"
+                      : "hover:bg-gray-50"
                   }`}
-                >
-                  <span
-                    className={
-                      METHOD_STYLES[ep.method] ??
-                      "method-pill bg-gray-100 text-gray-600"
-                    }
                   >
-                    {ep.method.toUpperCase()}
-                  </span>
-                  <span
-                    className={`truncate font-mono text-xs ${isActive ? "text-blue-700" : "text-gray-600"}`}
-                  >
-                    {ep.path}
-                  </span>
-                </button>
-              );
-            })}
+                    {/* METHOD */}
+                    <span
+                      className={`text-[10px] font-bold tracking-wide px-2 py-1 rounded-md ${
+                        METHOD_STYLES[ep.method] ?? "bg-gray-100 text-gray-600"
+                      }`}
+                    >
+                      {ep.method.toUpperCase()}
+                    </span>
+
+                    {/* PATH */}
+                    <span
+                      className={`flex-1 truncate font-mono text-xs ${
+                        isActive ? "text-blue-700 font-medium" : "text-gray-600"
+                      }`}
+                    >
+                      {ep.path}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         ))}
       </nav>
