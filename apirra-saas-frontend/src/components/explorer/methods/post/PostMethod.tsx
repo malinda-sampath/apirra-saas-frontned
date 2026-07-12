@@ -146,7 +146,6 @@ const PostMethod: React.FC<PostMethodProps> = ({
         method: "post",
         path: finalPath,
         baseUrl,
-        // body may not be part of ExecutePayload type; cast to satisfy TS
         body: parsedBody,
         queryParams,
         headers: {},
