@@ -7,10 +7,14 @@ type CurlGeneratorProps = {
   path: string;
   queryParams?: Record<string, string>;
   headers?: Record<string, string>;
+  body?: unknown;
   onCopy: (text: string) => void;
   isVisible: boolean;
   onToggle: () => void;
 };
+
+// Methods that conventionally carry a request body
+const BODY_METHODS = new Set(["post", "put", "patch"]);
 
 const CurlGenerator: React.FC<CurlGeneratorProps> = ({
   method,
@@ -18,6 +22,7 @@ const CurlGenerator: React.FC<CurlGeneratorProps> = ({
   path,
   queryParams = {},
   headers = {},
+  body,
   onCopy,
   isVisible,
   onToggle,
@@ -44,14 +49,43 @@ const CurlGenerator: React.FC<CurlGeneratorProps> = ({
 
     let curl = `curl -X ${method.toUpperCase()} "${fullUrl}"`;
 
+    const normalizedMethod = method.toLowerCase();
+    const supportsBody = BODY_METHODS.has(normalizedMethod);
+    const hasBody =
+      supportsBody &&
+      body !== undefined &&
+      body !== null &&
+      !(typeof body === "string" && body.trim() === "");
+
+    // Include a Content-Type header automatically when sending a JSON body,
+    // unless the caller already specified one explicitly.
+    const hasContentTypeHeader = Object.keys(headers).some(
+      (key) => key.toLowerCase() === "content-type",
+    );
+
     Object.entries(headers).forEach(([key, value]) => {
       if (value) {
         curl += ` \\\n  -H "${key}: ${value}"`;
       }
     });
 
+    if (hasBody) {
+      if (!hasContentTypeHeader) {
+        curl += ` \\\n  -H "Content-Type: application/json"`;
+      }
+
+      const bodyString =
+        typeof body === "string" ? body : JSON.stringify(body, null, 2);
+
+      // Escape any double quotes so the payload stays valid inside the
+      // single-quoted -d argument.
+      const escapedBody = bodyString.replace(/'/g, `'\\''`);
+
+      curl += ` \\\n  -d '${escapedBody}'`;
+    }
+
     return curl;
-  }, [method, baseUrl, path, queryParams, headers]);
+  }, [method, baseUrl, path, queryParams, headers, body]);
 
   return (
     <div className="space-y-3">
