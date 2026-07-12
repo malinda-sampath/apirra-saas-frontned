@@ -232,14 +232,11 @@ const PutMethod: React.FC<PutMethodProps> = ({
       {/* Header */}
       <div className="rounded-xl border border-gray-200 bg-linear-to-br from-white to-gray-50 p-6">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-3">
+          <div className="flex-1 space-y-2 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               <span
                 className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest"
-                style={{
-                  background: "var(--color-put, #eab308)",
-                  color: "var(--color-put-text, #1f2937)",
-                }}
+                style={{ background: "var(--color-put, #eab308)" }}
               >
                 PUT
               </span>

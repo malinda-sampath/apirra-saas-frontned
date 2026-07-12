@@ -1,6 +1,6 @@
 import type { ParsedApiMethod } from "../../../utils/openApiParser";
 import type { ExecutePayload } from "../../../types/executPayload";
-// import DeleteMethod from "./delete/DeleteMethod";
+import DeleteMethod from "./delete/DeleteMethod";
 import GetMethod from "./get/GetMethod";
 import PostMethod from "./post/PostMethod";
 import PutMethod from "./put/PutMethod";
@@ -46,9 +46,15 @@ const MethodRenderer: React.FC<Props> = ({
           baseUrl={baseUrl ?? ""}
         />
       );
-    // case "delete":
-    //   return <DeleteMethod endpoint={endpoint} onExecute={onExecute} />;
-    // case "patch":  return <PatchMethod endpoint={endpoint} />;
+    case "delete":
+      return (
+        <DeleteMethod
+          endpoint={endpoint as Parameters<typeof DeleteMethod>[0]["endpoint"]}
+          onExecute={onExecute}
+          loading={loading}
+          baseUrl={baseUrl ?? ""}
+        />
+      );
     default:
       return (
         <div className="rounded-xl border border-gray-200 bg-white p-6">

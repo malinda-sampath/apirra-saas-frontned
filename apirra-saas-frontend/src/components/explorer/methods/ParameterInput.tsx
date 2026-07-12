@@ -34,18 +34,18 @@ const ParameterInput: React.FC<ParameterInputProps> = ({
     );
   }
 
+  const isNumeric =
+    param.schema?.type === "integer" || param.schema?.type === "number";
+
   return (
     <input
-      type={
-        param.schema?.type === "integer" || param.schema?.type === "number"
-          ? "number"
-          : "text"
-      }
+      type={isNumeric ? "number" : "text"}
       placeholder={param.description ?? `Enter ${param.name}`}
       className="flex-1 min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
       required={param.required}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onWheel={isNumeric ? (e) => e.currentTarget.blur() : undefined}
       disabled={isDisabled}
       aria-label={`${param.name} input`}
     />
