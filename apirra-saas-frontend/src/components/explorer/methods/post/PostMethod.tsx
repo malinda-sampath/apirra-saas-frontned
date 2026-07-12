@@ -11,14 +11,8 @@ type Parameter = {
   };
 };
 
-type ResponseObject = { description?: string };
-type Responses = Record<string, ResponseObject>;
-
 type Props = {
-  endpoint: ParsedApiMethod & {
-    parameters?: Parameter[];
-    responses?: Responses;
-  };
+  endpoint: ParsedApiMethod;
   onExecute: (payload: ExecutePayload) => Promise<unknown>;
   loading?: boolean;
   baseUrl: string;
@@ -32,7 +26,11 @@ const PostMethod: React.FC<Props> = ({
 }) => {
   const [response, setResponse] = useState<unknown>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [requestBody, setRequestBody] = useState("");
+  const [requestBody, setRequestBody] = useState(
+    endpoint.requestExample !== undefined
+      ? JSON.stringify(endpoint.requestExample, null, 2)
+      : "",
+  );
 
   const handleTry = async () => {
     setIsRunning(true);
@@ -78,28 +76,33 @@ const PostMethod: React.FC<Props> = ({
   const params = (endpoint.parameters ?? []) as Parameter[];
 
   return (
-    <div className="w-full mt-10 space-y-4">
-      {/* HEADER */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-5">
-        <div className="mb-3 flex items-center gap-3">
-          <span
-            style={{
-              background: "var(--color-post)",
-              color: "var(--color-post-text)",
-            }}
-            className="rounded-lg px-3 py-1 text-xs font-bold tracking-widest"
-          >
-            POST
-          </span>
+    <div className="mx-auto w-full max-w-auto space-y-6 p-4">
+      {/* Header */}
+      <div className="rounded-xl border border-gray-200 bg-linear-to-br from-white to-gray-50 p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-3">
+              <span
+                style={{
+                  background: "var(--color-post)",
+                  color: "var(--color-post-text)",
+                }}
+                className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest text-white"
+              >
+                POST
+              </span>
 
-          <code className="font-mono text-sm text-gray-800">
-            {endpoint.path}
-          </code>
+              <code className="truncate font-mono text-sm text-gray-900">
+                {baseUrl}
+                {endpoint.path}
+              </code>
+            </div>
+
+            {endpoint.summary && (
+              <p className="text-sm text-gray-500">{endpoint.summary}</p>
+            )}
+          </div>
         </div>
-
-        {endpoint.summary && (
-          <p className="text-sm text-gray-500">{endpoint.summary}</p>
-        )}
       </div>
 
       {/* PARAMETERS */}
@@ -136,8 +139,11 @@ const PostMethod: React.FC<Props> = ({
         <textarea
           value={requestBody}
           onChange={(e) => setRequestBody(e.target.value)}
-          placeholder="Request Body (JSON)"
-          className="w-full mt-3 p-3 border rounded"
+          placeholder='{
+            "key": "value"
+          }'
+          rows={10}
+          className="w-full mt-3 p-4 rounded-lg border border-gray-300 bg-gray-50 text-sm font-mono text-gray-800 shadow-sm resize-y min-h-[320px] max-h-[600px] overflow-auto transition-all"
         />
 
         <button

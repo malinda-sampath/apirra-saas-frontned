@@ -203,7 +203,8 @@ const GetMethod: React.FC<GetMethodProps> = ({
               >
                 GET
               </span>
-              <code className="truncate font-mono text-sm font-semibold text-gray-900">
+              <code className="truncate font-mono text-sm text-gray-900">
+                {baseUrl}
                 {endpoint.path}
               </code>
             </div>
