@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev*)",
+      "Bash(npm run build*)",
+      "Bash(npm run preview*)",
+      "Bash(npm run lint*)",
+      "Bash(npm install*)",
+      "Bash(npx tsc*)",
+      "Read(./**)",
+      "Edit(./**)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}
