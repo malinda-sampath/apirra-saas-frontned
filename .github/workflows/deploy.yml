@@ -23,11 +23,14 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: apirra-saas-frontend/package-lock.json
 
       - name: Install dependencies
+        working-directory: ./apirra-saas-frontend
         run: npm ci
 
       - name: Build
+        working-directory: ./apirra-saas-frontend
         run: npm run build
 
       - name: Setup Pages
@@ -36,7 +39,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./apirra-saas-frontend/dist
 
   deploy:
     environment:
