@@ -60,7 +60,9 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
                 return (
                   <button
                     key={i}
-                    onClick={() => onSelect(ep)}
+                    onClick={() => {
+                      onSelect(ep);
+                    }}
                     className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors
                   ${
                     isActive
