@@ -1,5 +1,5 @@
-import { useState, type JSX, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, type JSX, type ReactNode } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchOpenApiSpec } from "../../features/explorer/api/openApiService";
 import { parseOpenApi } from "../../features/explorer/utils/openApiParser";
 import type { ParsedApiMethod } from "../../features/explorer/types";
@@ -167,6 +167,19 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Arriving via navigate("/#get-started") (e.g. from the Explorer page's
+  // "New Spec" button) needs a manual scroll - the browser only does this
+  // automatically on a full page load, not a client-side route change.
+  useEffect(() => {
+    if (!location.hash) return;
+
+    document.querySelector(location.hash)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [location.hash]);
 
   const loadExplorer = async (
     specUrl: string,
