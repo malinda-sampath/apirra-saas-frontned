@@ -1,5 +1,5 @@
-import { useState, type JSX, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, type JSX, type ReactNode } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { fetchOpenApiSpec } from "../../features/explorer/api/openApiService";
 import { parseOpenApi } from "../../features/explorer/utils/openApiParser";
 import type { ParsedApiMethod } from "../../features/explorer/types";
@@ -167,6 +167,19 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Arriving via navigate("/#get-started") (e.g. from the Explorer page's
+  // "New Spec" button) needs a manual scroll - the browser only does this
+  // automatically on a full page load, not a client-side route change.
+  useEffect(() => {
+    if (!location.hash) return;
+
+    document.querySelector(location.hash)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [location.hash]);
 
   const loadExplorer = async (
     specUrl: string,
@@ -269,8 +282,8 @@ const HomePage = () => {
 
             <p className="mx-auto mt-5 max-w-xl text-base text-slate-400 sm:text-lg">
               Apirra turns an OpenAPI or Swagger spec into a live, interactive
-              workspace — browse every endpoint, send real requests, and
-              inspect responses without leaving your browser.
+              workspace — browse every endpoint, send real requests, and inspect
+              responses without leaving your browser.
             </p>
           </div>
 
@@ -358,8 +371,8 @@ const HomePage = () => {
                   </p>
                   <p className="mt-1 text-xs text-slate-400">
                     Launch a ready-made demo spec that exercises GET, POST, PUT
-                    and DELETE against a public sandbox API — safe to
-                    experiment with freely, no backend of your own required.
+                    and DELETE against a public sandbox API — safe to experiment
+                    with freely, no backend of your own required.
                   </p>
 
                   <button
@@ -381,15 +394,18 @@ const HomePage = () => {
       </section>
 
       {/* Features */}
-      <section id="features" className="scroll-mt-16 border-t border-white/5 py-20">
+      <section
+        id="features"
+        className="scroll-mt-16 border-t border-white/5 py-20"
+      >
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mx-auto max-w-xl text-center">
             <h2 className="text-3xl font-bold tracking-tight text-white">
               Everything you need to test an API
             </h2>
             <p className="mt-3 text-sm text-slate-400 sm:text-base">
-              No Postman collection to import, no Docker container to run.
-              Just a spec URL and a browser tab.
+              No Postman collection to import, no Docker container to run. Just
+              a spec URL and a browser tab.
             </p>
           </div>
 
@@ -449,13 +465,100 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center sm:flex-row sm:justify-between sm:px-6 sm:text-left">
-          <Logo />
-          <p className="text-xs text-slate-500">
-            Apirra runs entirely in your browser — your API credentials and
-            traffic never touch a server you don&apos;t control.
-          </p>
+      <footer className="border-t border-white/5">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Product branding */}
+            <div className="lg:col-span-2">
+              <Logo />
+              <p className="mt-4 max-w-sm text-sm text-slate-400">
+                A fast, client-side OpenAPI &amp; Swagger explorer — paste a
+                spec, browse every endpoint, and try it out instantly. No
+                install, no backend, no signup.
+              </p>
+              <p className="mt-5 text-xs text-slate-500">
+                Supports OpenAPI 3.x &bull; Swagger 2.x &bull; JSON endpoints
+              </p>
+            </div>
+
+            {/* Product nav */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-300">
+                Product
+              </h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-slate-400">
+                <li>
+                  <a href="#get-started" className="transition hover:text-white">
+                    Get Started
+                  </a>
+                </li>
+                <li>
+                  <a href="#features" className="transition hover:text-white">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="#how-it-works" className="transition hover:text-white">
+                    How it works
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Author */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-300">
+                Author
+              </h3>
+              <ul className="mt-4 space-y-2.5 text-sm text-slate-400">
+                <li>
+                  <a
+                    href="https://malindasampath.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 transition hover:text-white"
+                  >
+                    Portfolio
+                    <svg
+                      className="h-3.5 w-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M14 5h5m0 0v5m0-5L10 14M6 5H5a1 1 0 00-1 1v13a1 1 0 001 1h13a1 1 0 001-1v-1"
+                      />
+                    </svg>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="mt-12 flex flex-col items-center gap-3 border-t border-white/5 pt-6 text-xs text-slate-500 sm:flex-row sm:justify-between">
+            <p>&copy; {new Date().getFullYear()} Apirra. All rights reserved.</p>
+            <p>
+              Designed &amp; built by{" "}
+              <a
+                href="https://malindasampath.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-slate-300 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white/40"
+              >
+                Malinda Sampath
+              </a>
+            </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              className="transition hover:text-white"
+            >
+              Back to top &uarr;
+            </button>
+          </div>
         </div>
       </footer>
     </div>
