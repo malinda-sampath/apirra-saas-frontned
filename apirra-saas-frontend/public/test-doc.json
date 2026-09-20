@@ -1,0 +1,273 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Apirra Demo API",
+    "description": "A ready-to-use OpenAPI spec for exploring Apirra without your own backend. It targets the public JSONPlaceholder sandbox (https://jsonplaceholder.typicode.com) — a free fake REST API that is safe to send GET, POST, PUT and DELETE requests against. Writes are simulated and echoed back; nothing is ever actually persisted or deleted, so feel free to experiment freely.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://jsonplaceholder.typicode.com",
+      "description": "JSONPlaceholder sandbox"
+    }
+  ],
+  "tags": [
+    { "name": "Posts", "description": "Create, read, update and delete blog posts" },
+    { "name": "Todos", "description": "Read-only todo items" },
+    { "name": "Users", "description": "Read-only user directory" }
+  ],
+  "paths": {
+    "/posts": {
+      "get": {
+        "tags": ["Posts"],
+        "operationId": "listPosts",
+        "summary": "List posts",
+        "description": "Returns all posts, optionally filtered by author.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "description": "Filter posts by author id (1-10)",
+            "schema": { "type": "integer", "example": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Post" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Posts"],
+        "operationId": "createPost",
+        "summary": "Create a post",
+        "description": "Simulated create — the sandbox echoes the payload back with a new id; nothing is actually saved server-side.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewPost" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Post" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{id}": {
+      "get": {
+        "tags": ["Posts"],
+        "operationId": "getPost",
+        "summary": "Get a post by id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The post",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Post" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Posts"],
+        "operationId": "updatePost",
+        "summary": "Update a post",
+        "description": "Simulated update — the sandbox echoes the payload back; nothing is actually saved server-side.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewPost" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Post" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Posts"],
+        "operationId": "deletePost",
+        "summary": "Delete a post",
+        "description": "Simulated delete — always returns 200 with an empty body; nothing is actually removed server-side.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer", "example": 1 }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Deleted" }
+        }
+      }
+    },
+    "/todos": {
+      "get": {
+        "tags": ["Todos"],
+        "operationId": "listTodos",
+        "summary": "List todos",
+        "description": "Returns todo items, optionally filtered by author or completion state.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "description": "Filter todos by author id (1-10)",
+            "schema": { "type": "integer", "example": 1 }
+          },
+          {
+            "name": "completed",
+            "in": "query",
+            "required": false,
+            "description": "Filter by completion state",
+            "schema": { "type": "boolean", "example": false }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of todos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Todo" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "operationId": "listUsers",
+        "summary": "List users",
+        "description": "Returns the full user directory.",
+        "responses": {
+          "200": {
+            "description": "A list of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NewPost": {
+        "type": "object",
+        "required": ["title", "body", "userId"],
+        "properties": {
+          "title": { "type": "string", "example": "Testing Apirra" },
+          "body": {
+            "type": "string",
+            "example": "This request was sent from the Apirra demo spec."
+          },
+          "userId": { "type": "integer", "example": 1 }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "userId": { "type": "integer", "example": 1 },
+          "title": { "type": "string", "example": "Testing Apirra" },
+          "body": {
+            "type": "string",
+            "example": "This request was sent from the Apirra demo spec."
+          }
+        }
+      },
+      "Todo": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "userId": { "type": "integer", "example": 1 },
+          "title": { "type": "string", "example": "delectus aut autem" },
+          "completed": { "type": "boolean", "example": false }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Leanne Graham" },
+          "username": { "type": "string", "example": "Bret" },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "Sincere@april.biz"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "street": { "type": "string", "example": "Kulas Light" },
+              "city": { "type": "string", "example": "Gwenborough" },
+              "zipcode": { "type": "string", "example": "92998-3874" }
+            }
+          },
+          "phone": { "type": "string", "example": "1-770-736-8031 x56442" },
+          "website": { "type": "string", "example": "hildegard.org" },
+          "company": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "example": "Romaguera-Crona" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
