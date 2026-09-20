@@ -150,12 +150,12 @@ const STEPS = [
 ];
 
 const FeatureCard = ({ icon, title, description }: Feature) => (
-  <div className="rounded-2xl border border-gray-200 bg-white p-6 transition hover:border-blue-200 hover:shadow-md">
-    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+  <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-white/20 hover:bg-white/[0.04]">
+    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-500/20 to-violet-500/20 text-cyan-300 ring-1 ring-white/10">
       {icon}
     </div>
-    <h3 className="mt-4 text-sm font-semibold text-gray-900">{title}</h3>
-    <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
+    <h3 className="mt-4 text-sm font-semibold text-white">{title}</h3>
+    <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
       {description}
     </p>
   </div>
@@ -163,11 +163,14 @@ const FeatureCard = ({ icon, title, description }: Feature) => (
 
 const Logo = ({ className = "" }: { className?: string }) => (
   <div className={`flex items-center gap-2 ${className}`}>
-    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-blue-600 to-indigo-600 text-sm font-bold text-white shadow-sm">
+    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-blue-500 to-violet-500 text-sm font-bold text-white shadow-[0_0_20px_-4px_rgba(99,102,241,0.8)]">
       A
     </div>
-    <span className="text-lg font-bold tracking-tight text-gray-900">
-      API<span className="text-blue-600">RRA</span>
+    <span className="text-lg font-bold tracking-tight text-white">
+      API
+      <span className="bg-linear-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
+        RRA
+      </span>
     </span>
   </div>
 );
@@ -231,22 +234,22 @@ const HomePage = () => {
     );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#05070d]">
       {/* Nav */}
-      <header className="sticky top-0 z-20 border-b border-gray-100 bg-white/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-20 border-b border-white/5 bg-[#05070d]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <Logo />
-          <nav className="hidden items-center gap-8 text-sm font-medium text-gray-500 sm:flex">
-            <a href="#features" className="transition hover:text-gray-900">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-400 sm:flex">
+            <a href="#features" className="transition hover:text-white">
               Features
             </a>
-            <a href="#how-it-works" className="transition hover:text-gray-900">
+            <a href="#how-it-works" className="transition hover:text-white">
               How it works
             </a>
           </nav>
           <a
             href="#get-started"
-            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-gray-700"
+            className="rounded-lg bg-linear-to-r from-blue-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_0_20px_-6px_rgba(99,102,241,0.7)] transition hover:brightness-110"
           >
             Get Started
           </a>
@@ -254,33 +257,43 @@ const HomePage = () => {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-linear-to-b from-blue-50/70 via-white to-white">
-        <div className="mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
+      <section className="relative overflow-hidden">
+        {/* decorative grid + glow */}
+        <div className="pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:44px_44px]" />
+        </div>
+        <div className="pointer-events-none absolute left-1/2 top-[-6rem] h-72 w-[36rem] -translate-x-1/2 rounded-full bg-blue-600/20 blur-3xl" />
+        <div className="pointer-events-none absolute right-[-4rem] top-24 h-56 w-56 rounded-full bg-violet-600/20 blur-3xl" />
+
+        <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
               100% client-side · no signup required
             </span>
 
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-6xl">
               Explore any REST API
               <br />
-              <span className="text-blue-600">in seconds</span>
+              <span className="bg-linear-to-r from-blue-400 via-cyan-300 to-violet-400 bg-clip-text text-transparent">
+                in seconds
+              </span>
             </h1>
 
-            <p className="mx-auto mt-5 max-w-xl text-base text-gray-500 sm:text-lg">
+            <p className="mx-auto mt-5 max-w-xl text-base text-slate-400 sm:text-lg">
               Apirra turns an OpenAPI or Swagger spec into a live, interactive
-              workspace — browse every endpoint, send real requests, and inspect
-              responses without leaving your browser.
+              workspace — browse every endpoint, send real requests, and
+              inspect responses without leaving your browser.
             </p>
           </div>
 
           {/* Main Card */}
           <div
             id="get-started"
-            className="mx-auto mt-10 w-full max-w-xl scroll-mt-24"
+            className="relative mx-auto mt-10 w-full max-w-xl scroll-mt-24"
           >
-            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl shadow-gray-200/50">
-              <div className="h-1 bg-linear-to-r from-blue-600 to-indigo-600" />
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-2xl shadow-black/40 backdrop-blur-xl">
+              <div className="h-1 bg-linear-to-r from-blue-500 via-cyan-400 to-violet-500" />
 
               <div className="space-y-5 p-8">
                 {/* Input section */}
@@ -291,17 +304,18 @@ const HomePage = () => {
                     value={baseUrl}
                     onChange={(e) => setBaseUrlState(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleLoad()}
+                    className="!bg-white/5 !border-white/10 !text-white placeholder:!text-slate-500 hover:!border-white/20 focus:!border-blue-400 focus:!bg-white/5 focus:!ring-2 focus:!ring-blue-500/20"
                   />
 
-                  <p className="mt-2 text-xs text-gray-400">
+                  <p className="mt-2 text-xs text-slate-500">
                     Example: http://localhost:8081/v3/api-docs
                   </p>
                 </div>
 
                 {/* Error */}
                 {error && (
-                  <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3">
-                    <p className="text-sm text-red-600">{error}</p>
+                  <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
+                    <p className="text-sm text-red-300">{error}</p>
                   </div>
                 )}
 
@@ -309,7 +323,7 @@ const HomePage = () => {
                 <button
                   onClick={handleLoad}
                   disabled={loading || !baseUrl.trim()}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-blue-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {loading ? (
                     <>
@@ -342,30 +356,30 @@ const HomePage = () => {
                 {/* Demo divider */}
                 <div className="relative py-1">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200" />
+                    <div className="w-full border-t border-white/10" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="bg-white px-3 text-[11px] font-medium uppercase tracking-wider text-gray-400">
+                    <span className="bg-[#0b0f1a] px-3 text-[11px] font-medium uppercase tracking-wider text-slate-500">
                       or
                     </span>
                   </div>
                 </div>
 
                 {/* No environment? Try the demo spec */}
-                <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
-                  <p className="text-sm font-medium text-gray-800">
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                  <p className="text-sm font-medium text-white">
                     Don&apos;t have an API to test with?
                   </p>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-slate-400">
                     Launch a ready-made demo spec that exercises GET, POST, PUT
-                    and DELETE against a public sandbox API — safe to experiment
-                    with freely, no backend of your own required.
+                    and DELETE against a public sandbox API — safe to
+                    experiment with freely, no backend of your own required.
                   </p>
 
                   <button
                     onClick={handleLoadDemo}
                     disabled={loading}
-                    className="mt-3 w-full rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="mt-3 w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {loading ? "Connecting…" : "Try the Demo API"}
                   </button>
@@ -373,7 +387,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            <p className="mt-4 text-center text-xs text-gray-400">
+            <p className="mt-4 text-center text-xs text-slate-500">
               Supports OpenAPI 3.x • Swagger 2.x • JSON endpoints
             </p>
           </div>
@@ -381,15 +395,15 @@ const HomePage = () => {
       </section>
 
       {/* Features */}
-      <section id="features" className="scroll-mt-16 bg-white py-20">
+      <section id="features" className="scroll-mt-16 border-t border-white/5 py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-3xl font-bold tracking-tight text-white">
               Everything you need to test an API
             </h2>
-            <p className="mt-3 text-sm text-gray-500 sm:text-base">
-              No Postman collection to import, no Docker container to run. Just
-              a spec URL and a browser tab.
+            <p className="mt-3 text-sm text-slate-400 sm:text-base">
+              No Postman collection to import, no Docker container to run.
+              Just a spec URL and a browser tab.
             </p>
           </div>
 
@@ -404,38 +418,43 @@ const HomePage = () => {
       {/* How it works */}
       <section
         id="how-it-works"
-        className="scroll-mt-16 border-t border-gray-100 bg-gray-50 py-20"
+        className="scroll-mt-16 border-t border-white/5 py-20"
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="mx-auto max-w-xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-3xl font-bold tracking-tight text-white">
               How it works
             </h2>
-            <p className="mt-3 text-sm text-gray-500 sm:text-base">
+            <p className="mt-3 text-sm text-slate-400 sm:text-base">
               From spec to your first request in three steps.
             </p>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-3">
-            {STEPS.map((item) => (
-              <div key={item.step} className="text-center sm:text-left">
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white sm:mx-0">
-                  {item.step}
+          <div className="relative mt-16">
+            <div className="absolute left-0 right-0 top-5 hidden h-px bg-white/10 sm:block" />
+            <div className="relative grid grid-cols-1 gap-10 sm:grid-cols-3">
+              {STEPS.map((item) => (
+                <div key={item.step} className="text-center sm:text-left">
+                  <div className="relative z-10 mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#05070d] ring-1 ring-white/10 sm:mx-0">
+                    <span className="flex h-full w-full items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-violet-500 text-sm font-bold text-white">
+                      {item.step}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-base font-semibold text-white">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
+                    {item.description}
+                  </p>
                 </div>
-                <h3 className="mt-4 text-base font-semibold text-gray-900">
-                  {item.title}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-gray-500">
-                  {item.description}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className="mt-12 text-center">
             <a
               href="#get-started"
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className="inline-flex items-center justify-center rounded-xl bg-linear-to-r from-blue-500 to-violet-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:brightness-110"
             >
               Start exploring your API
             </a>
@@ -444,10 +463,10 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 bg-white py-10">
+      <footer className="border-t border-white/5 py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center sm:flex-row sm:justify-between sm:px-6 sm:text-left">
           <Logo />
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-slate-500">
             Apirra runs entirely in your browser — your API credentials and
             traffic never touch a server you don&apos;t control.
           </p>
