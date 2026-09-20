@@ -72,7 +72,8 @@ src/
 │           ├── put/PutMethod.tsx
 │           └── delete/DeleteMethod.tsx
 ├── services/
-│   ├── appApi.ts              # axios instance, fixed backend (VITE_APP_API_URL)
+│   ├── app/
+│   │   └── appApi.ts          # axios instance, fixed backend (VITE_APP_API_URL)
 │   └── explorer/
 │       ├── explorerApi.ts     # axios instance, no baseURL (target API is user-supplied)
 │       ├── openApiService.ts  # fetchOpenApiSpec
@@ -141,7 +142,7 @@ src/
 3. **`ResponseDisplay`'s "Request Details" tab hardcodes the method label as
    `GET`** regardless of what method was actually sent — it isn't passed the
    real method and should be.
-4. **`services/appApi.ts` appears unused** in everything shown so far —
+4. **`services/app/appApi.ts` appears unused** in everything shown so far —
    confirm whether it's dead code or reserved for an upcoming
    auth/account feature before deleting it.
 5. **`PATCH`/`HEAD`/`OPTIONS`** are recognized in the OpenAPI parser and
@@ -160,6 +161,17 @@ npm run build       # production build (tsc + vite build)
 npm run preview      # preview a production build
 npm run lint          # eslint
 ```
+
+## Deployment
+This project directory (`apirra-saas-frontend/`) is nested one level inside
+the git repo root (`apirra-saas-frontned/`). The GitHub Actions workflow that
+builds and deploys it lives **outside this directory**, at
+`../.github/workflows/deploy.yml` (repo root), not under a `.github/` folder
+inside this project. On every push to `main` it runs `npm ci` / `npm run
+build` with `working-directory: ./apirra-saas-frontend`, then publishes
+`./apirra-saas-frontend/dist` to GitHub Pages. If you rename this directory
+or change the build output path, update that workflow file too — it won't
+show up in a search scoped to this project folder.
 
 ## What "done" looks like for a task in this repo
 1. New/changed code follows the existing method-component pattern (state
