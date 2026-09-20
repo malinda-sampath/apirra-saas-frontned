@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import type { ParsedApiMethod } from "../../../utils/openApiParser";
-import MethodRenderer from "../methods/MethodRenderer";
-import { executeRequest } from "../../../services/explorer/requestExecutor";
-import type { ExecutePayload } from "../../../types/executPayload";
+import Sidebar from "../../features/explorer/components/Sidebar";
+import MethodRenderer from "../../features/explorer/components/MethodRenderer";
+import { executeRequest } from "../../features/explorer/api/requestExecutor";
+import type {
+  ParsedApiMethod,
+  ExecutePayload,
+} from "../../features/explorer/types";
 
 const ExplorerPage = () => {
   const location = useLocation();

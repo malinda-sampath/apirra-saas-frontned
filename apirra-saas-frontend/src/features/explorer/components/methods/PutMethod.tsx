@@ -1,25 +1,15 @@
 import { useEffect, useState } from "react";
+import type { OpenAPIV3 } from "openapi-types";
 import ParameterSection from "../ParameterSection";
 import CurlGenerator from "../CurlGenerator";
 import ResponseDisplay from "../ResponseDisplay";
 import RequestHistory from "../RequestHistory";
 import type { HistoryItem } from "../RequestHistory";
 import ToastContainer from "../ToastContainer";
-import type {
-  Parameter,
-  ResponseObject,
-  Responses,
-  Toast,
-  ExecutePayload,
-  ParsedApiMethod,
-} from "../../../../types/methodTypes";
+import type { Toast, ExecutePayload, ParsedApiMethod } from "../../types";
 
 type PutMethodProps = {
-  endpoint: ParsedApiMethod & {
-    parameters?: Parameter[];
-    responses?: Responses;
-    requestExample?: unknown;
-  };
+  endpoint: ParsedApiMethod;
   onExecute: (payload: ExecutePayload) => Promise<unknown>;
   loading?: boolean;
   baseUrl: string;
@@ -149,7 +139,7 @@ const PutMethod: React.FC<PutMethodProps> = ({
         body: parsedBody,
         queryParams,
         headers: {},
-      } as unknown as ExecutePayload);
+      });
 
       setResponse(res);
 
@@ -338,7 +328,7 @@ const PutMethod: React.FC<PutMethodProps> = ({
           </h2>
           <div className="space-y-2">
             {Object.entries(responses).map(
-              ([code, resp]: [string, ResponseObject]) => {
+              ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
                 const isSuccess = code.startsWith("2");
                 return (
                   <div
@@ -406,7 +396,7 @@ const PutMethod: React.FC<PutMethodProps> = ({
 
         {/* cURL Generator Component */}
         <CurlGenerator
-          method="PUT"
+          method={endpoint.method}
           baseUrl={baseUrl}
           path={finalPathForCurl}
           queryParams={queryParams}

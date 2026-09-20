@@ -1,30 +1,21 @@
 import { useEffect, useState } from "react";
+import type { OpenAPIV3 } from "openapi-types";
 import ParameterSection from "../ParameterSection";
 import CurlGenerator from "../CurlGenerator";
 import ResponseDisplay from "../ResponseDisplay";
 import RequestHistory from "../RequestHistory";
 import type { HistoryItem } from "../RequestHistory";
 import ToastContainer from "../ToastContainer";
-import type {
-  Parameter,
-  ResponseObject,
-  Responses,
-  Toast,
-  ExecutePayload,
-  ParsedApiMethod,
-} from "../../../../types/methodTypes";
+import type { Toast, ExecutePayload, ParsedApiMethod } from "../../types";
 
-type GetMethodProps = {
-  endpoint: ParsedApiMethod & {
-    parameters?: Parameter[];
-    responses?: Responses;
-  };
+type PostMethodProps = {
+  endpoint: ParsedApiMethod;
   onExecute: (payload: ExecutePayload) => Promise<unknown>;
   loading?: boolean;
   baseUrl: string;
 };
 
-const GetMethod: React.FC<GetMethodProps> = ({
+const PostMethod: React.FC<PostMethodProps> = ({
   endpoint,
   onExecute,
   loading,
@@ -34,6 +25,11 @@ const GetMethod: React.FC<GetMethodProps> = ({
   const [response, setResponse] = useState<unknown>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
+  const [requestBody, setRequestBody] = useState(
+    endpoint.requestExample !== undefined
+      ? JSON.stringify(endpoint.requestExample, null, 2)
+      : "",
+  );
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showCurl, setShowCurl] = useState(false);
   const [activeTab, setActiveTab] = useState<"request" | "response">(
@@ -100,6 +96,21 @@ const GetMethod: React.FC<GetMethodProps> = ({
       return;
     }
 
+    // Validate & parse JSON body
+    let parsedBody: unknown = undefined;
+    if (requestBody.trim()) {
+      try {
+        parsedBody = JSON.parse(requestBody);
+      } catch {
+        addToast("Invalid JSON body", "error");
+        setResponse({
+          success: false,
+          error: "Invalid JSON body",
+        });
+        return;
+      }
+    }
+
     setIsRunning(true);
     setActiveTab("response");
 
@@ -122,9 +133,10 @@ const GetMethod: React.FC<GetMethodProps> = ({
       );
 
       const res = await onExecute({
-        method: "get",
+        method: "post",
         path: finalPath,
         baseUrl,
+        body: parsedBody,
         queryParams,
         headers: {},
       });
@@ -175,9 +187,23 @@ const GetMethod: React.FC<GetMethodProps> = ({
       .filter(([, value]) => value !== undefined && value !== ""),
   );
 
+  let curlBody: unknown = undefined;
+  if (requestBody.trim()) {
+    try {
+      curlBody = JSON.parse(requestBody);
+    } catch {
+      curlBody = undefined;
+    }
+  }
+
   const resetState = () => {
     setResponse(null);
     setParamValues({});
+    setRequestBody(
+      endpoint.requestExample !== undefined
+        ? JSON.stringify(endpoint.requestExample, null, 2)
+        : "",
+    );
     setActiveTab("request");
   };
 
@@ -187,6 +213,7 @@ const GetMethod: React.FC<GetMethodProps> = ({
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint.path]);
   // ==================== Render ==================
 
@@ -199,9 +226,9 @@ const GetMethod: React.FC<GetMethodProps> = ({
             <div className="flex items-center gap-3 min-w-0">
               <span
                 className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest"
-                style={{ background: "var(--color-get, #10b981)" }}
+                style={{ background: "var(--color-post, #3b82f6)" }}
               >
-                GET
+                POST
               </span>
               <code className="truncate font-mono text-sm text-gray-900">
                 {baseUrl}
@@ -277,6 +304,22 @@ const GetMethod: React.FC<GetMethodProps> = ({
         </div>
       )}
 
+      {/* Request Body Section */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">
+          Request Body
+        </h2>
+        <textarea
+          value={requestBody}
+          onChange={(e) => setRequestBody(e.target.value)}
+          placeholder={'{\n  "key": "value"\n}'}
+          rows={10}
+          disabled={isRunning || loading}
+          className="min-h-[320px] w-full resize-y overflow-auto rounded-lg border border-gray-300 bg-gray-50 p-4 font-mono text-sm text-gray-800 shadow-sm transition-all disabled:opacity-60"
+          aria-label="Request body JSON"
+        />
+      </div>
+
       {/* Responses Documentation */}
       {Object.keys(responses).length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-white p-6">
@@ -285,7 +328,7 @@ const GetMethod: React.FC<GetMethodProps> = ({
           </h2>
           <div className="space-y-2">
             {Object.entries(responses).map(
-              ([code, resp]: [string, ResponseObject]) => {
+              ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
                 const isSuccess = code.startsWith("2");
                 return (
                   <div
@@ -353,11 +396,12 @@ const GetMethod: React.FC<GetMethodProps> = ({
 
         {/* cURL Generator Component */}
         <CurlGenerator
-          method="GET"
+          method={endpoint.method}
           baseUrl={baseUrl}
           path={finalPathForCurl}
           queryParams={queryParams}
           headers={{}}
+          body={curlBody}
           onCopy={copyToClipboard}
           isVisible={showCurl}
           onToggle={() => setShowCurl(!showCurl)}
@@ -387,4 +431,4 @@ const GetMethod: React.FC<GetMethodProps> = ({
   );
 };
 
-export default GetMethod;
+export default PostMethod;

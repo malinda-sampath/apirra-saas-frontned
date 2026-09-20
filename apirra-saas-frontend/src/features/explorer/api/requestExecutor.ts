@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ExecutePayload } from "../../types/executPayload";
+import type { ExecutePayload } from "../types";
 
 export const executeRequest = async ({
   baseUrl,

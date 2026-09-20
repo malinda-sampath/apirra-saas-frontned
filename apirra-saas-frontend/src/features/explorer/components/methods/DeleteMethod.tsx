@@ -1,31 +1,21 @@
 import { useEffect, useState } from "react";
+import type { OpenAPIV3 } from "openapi-types";
 import ParameterSection from "../ParameterSection";
 import CurlGenerator from "../CurlGenerator";
 import ResponseDisplay from "../ResponseDisplay";
 import RequestHistory from "../RequestHistory";
 import type { HistoryItem } from "../RequestHistory";
 import ToastContainer from "../ToastContainer";
-import type {
-  Parameter,
-  ResponseObject,
-  Responses,
-  Toast,
-  ExecutePayload,
-  ParsedApiMethod,
-} from "../../../../types/methodTypes";
+import type { Toast, ExecutePayload, ParsedApiMethod } from "../../types";
 
-type PostMethodProps = {
-  endpoint: ParsedApiMethod & {
-    parameters?: Parameter[];
-    responses?: Responses;
-    requestExample?: unknown;
-  };
+type DeleteMethodProps = {
+  endpoint: ParsedApiMethod;
   onExecute: (payload: ExecutePayload) => Promise<unknown>;
   loading?: boolean;
   baseUrl: string;
 };
 
-const PostMethod: React.FC<PostMethodProps> = ({
+const DeleteMethod: React.FC<DeleteMethodProps> = ({
   endpoint,
   onExecute,
   loading,
@@ -35,17 +25,13 @@ const PostMethod: React.FC<PostMethodProps> = ({
   const [response, setResponse] = useState<unknown>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
-  const [requestBody, setRequestBody] = useState(
-    endpoint.requestExample !== undefined
-      ? JSON.stringify(endpoint.requestExample, null, 2)
-      : "",
-  );
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showCurl, setShowCurl] = useState(false);
   const [activeTab, setActiveTab] = useState<"request" | "response">(
     "response",
   );
   const [requestHistory, setRequestHistory] = useState<HistoryItem[]>([]);
+  const [confirmArmed, setConfirmArmed] = useState(false);
 
   // Constants
   const params = endpoint.parameters ?? [];
@@ -83,44 +69,18 @@ const PostMethod: React.FC<PostMethodProps> = ({
       ...prev,
       [paramName]: value,
     }));
+    // Any param edit re-arms the confirmation requirement
+    setConfirmArmed(false);
   };
 
   const handleReset = () => {
     setParamValues({});
     setResponse(null);
+    setConfirmArmed(false);
     addToast("Parameters cleared", "info");
   };
 
-  const handleTry = async () => {
-    // Validate required parameters
-    const missing = params.find(
-      (p) => p.required && !paramValues[p.name]?.trim(),
-    );
-
-    if (missing) {
-      addToast(`${missing.name} is required`, "error");
-      setResponse({
-        success: false,
-        error: `${missing.name} is required.`,
-      });
-      return;
-    }
-
-    // Validate & parse JSON body
-    let parsedBody: unknown = undefined;
-    if (requestBody.trim()) {
-      try {
-        parsedBody = JSON.parse(requestBody);
-      } catch {
-        addToast("Invalid JSON body", "error");
-        setResponse({
-          success: false,
-          error: "Invalid JSON body",
-        });
-        return;
-      }
-    }
-
+  const executeDelete = async () => {
     setIsRunning(true);
     setActiveTab("response");
 
@@ -143,13 +103,12 @@ const PostMethod: React.FC<PostMethodProps> = ({
       );
 
       const res = await onExecute({
-        method: "post",
+        method: "delete",
         path: finalPath,
         baseUrl,
-        body: parsedBody,
         queryParams,
         headers: {},
-      } as unknown as ExecutePayload);
+      });
 
       setResponse(res);
 
@@ -173,11 +132,38 @@ const PostMethod: React.FC<PostMethodProps> = ({
       addToast(errorMsg, "error");
     } finally {
       setIsRunning(false);
+      setConfirmArmed(false);
     }
+  };
+
+  const handleTry = async () => {
+    // Validate required parameters
+    const missing = params.find(
+      (p) => p.required && !paramValues[p.name]?.trim(),
+    );
+
+    if (missing) {
+      addToast(`${missing.name} is required`, "error");
+      setResponse({
+        success: false,
+        error: `${missing.name} is required.`,
+      });
+      return;
+    }
+
+    // DELETE is destructive — require an explicit second click to confirm.
+    if (!confirmArmed) {
+      setConfirmArmed(true);
+      addToast("Click again to confirm deletion", "info");
+      return;
+    }
+
+    await executeDelete();
   };
 
   const handleRestoreFromHistory = (params: Record<string, string>) => {
     setParamValues(params);
+    setConfirmArmed(false);
     addToast("Parameters restored", "info");
   };
 
@@ -197,23 +183,10 @@ const PostMethod: React.FC<PostMethodProps> = ({
       .filter(([, value]) => value !== undefined && value !== ""),
   );
 
-  let curlBody: unknown = undefined;
-  if (requestBody.trim()) {
-    try {
-      curlBody = JSON.parse(requestBody);
-    } catch {
-      curlBody = undefined;
-    }
-  }
-
   const resetState = () => {
     setResponse(null);
     setParamValues({});
-    setRequestBody(
-      endpoint.requestExample !== undefined
-        ? JSON.stringify(endpoint.requestExample, null, 2)
-        : "",
-    );
+    setConfirmArmed(false);
     setActiveTab("request");
   };
 
@@ -236,9 +209,9 @@ const PostMethod: React.FC<PostMethodProps> = ({
             <div className="flex items-center gap-3 min-w-0">
               <span
                 className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest"
-                style={{ background: "var(--color-post, #3b82f6)" }}
+                style={{ background: "var(--color-delete, #ef4444)" }}
               >
-                POST
+                DELETE
               </span>
               <code className="truncate font-mono text-sm text-gray-900">
                 {baseUrl}
@@ -314,22 +287,6 @@ const PostMethod: React.FC<PostMethodProps> = ({
         </div>
       )}
 
-      {/* Request Body Section */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">
-          Request Body
-        </h2>
-        <textarea
-          value={requestBody}
-          onChange={(e) => setRequestBody(e.target.value)}
-          placeholder={'{\n  "key": "value"\n}'}
-          rows={10}
-          disabled={isRunning || loading}
-          className="min-h-[320px] w-full resize-y overflow-auto rounded-lg border border-gray-300 bg-gray-50 p-4 font-mono text-sm text-gray-800 shadow-sm transition-all disabled:opacity-60"
-          aria-label="Request body JSON"
-        />
-      </div>
-
       {/* Responses Documentation */}
       {Object.keys(responses).length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-white p-6">
@@ -338,7 +295,7 @@ const PostMethod: React.FC<PostMethodProps> = ({
           </h2>
           <div className="space-y-2">
             {Object.entries(responses).map(
-              ([code, resp]: [string, ResponseObject]) => {
+              ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
                 const isSuccess = code.startsWith("2");
                 return (
                   <div
@@ -368,12 +325,29 @@ const PostMethod: React.FC<PostMethodProps> = ({
 
       {/* Request Execution Section */}
       <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
+        {confirmArmed && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
+            This will permanently delete the resource. Click{" "}
+            <span className="font-semibold">Confirm Delete</span> to proceed.
+          </div>
+        )}
+
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={handleTry}
             disabled={loading || isRunning}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60 sm:flex-none"
-            aria-label={isRunning ? "Sending request" : "Send request"}
+            className={`inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition disabled:opacity-60 sm:flex-none ${
+              confirmArmed
+                ? "bg-red-700 hover:bg-red-800"
+                : "bg-red-600 hover:bg-red-700"
+            }`}
+            aria-label={
+              isRunning
+                ? "Sending request"
+                : confirmArmed
+                  ? "Confirm delete"
+                  : "Send request"
+            }
           >
             {loading || isRunning ? (
               <>
@@ -398,20 +372,30 @@ const PostMethod: React.FC<PostMethodProps> = ({
                 </svg>
                 Sending…
               </>
+            ) : confirmArmed ? (
+              <>⚠ Confirm Delete</>
             ) : (
               <>▶ Send Request</>
             )}
           </button>
+
+          {confirmArmed && !isRunning && (
+            <button
+              onClick={() => setConfirmArmed(false)}
+              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          )}
         </div>
 
         {/* cURL Generator Component */}
         <CurlGenerator
-          method="POST"
+          method={endpoint.method}
           baseUrl={baseUrl}
           path={finalPathForCurl}
           queryParams={queryParams}
           headers={{}}
-          body={curlBody}
           onCopy={copyToClipboard}
           isVisible={showCurl}
           onToggle={() => setShowCurl(!showCurl)}
@@ -441,4 +425,4 @@ const PostMethod: React.FC<PostMethodProps> = ({
   );
 };
 
-export default PostMethod;
+export default DeleteMethod;

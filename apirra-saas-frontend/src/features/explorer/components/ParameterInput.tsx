@@ -1,8 +1,8 @@
 import React from "react";
-import type { Parameter } from "../../../types/methodTypes";
+import type { OpenAPIV3 } from "openapi-types";
 
 type ParameterInputProps = {
-  param: Parameter;
+  param: OpenAPIV3.ParameterObject;
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
@@ -17,8 +17,9 @@ const ParameterInput: React.FC<ParameterInputProps> = ({
   loading = false,
 }) => {
   const isDisabled = disabled || loading;
+  const schema = param.schema as OpenAPIV3.SchemaObject | undefined;
 
-  if (param.schema?.type === "boolean") {
+  if (schema?.type === "boolean") {
     return (
       <select
         className="flex-1 min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition hover:border-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
@@ -34,8 +35,7 @@ const ParameterInput: React.FC<ParameterInputProps> = ({
     );
   }
 
-  const isNumeric =
-    param.schema?.type === "integer" || param.schema?.type === "number";
+  const isNumeric = schema?.type === "integer" || schema?.type === "number";
 
   return (
     <input

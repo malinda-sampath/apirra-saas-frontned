@@ -1,9 +1,8 @@
-import type { ParsedApiMethod } from "../../../utils/openApiParser";
-import type { ExecutePayload } from "../../../types/executPayload";
-import DeleteMethod from "./delete/DeleteMethod";
-import GetMethod from "./get/GetMethod";
-import PostMethod from "./post/PostMethod";
-import PutMethod from "./put/PutMethod";
+import type { ParsedApiMethod, ExecutePayload } from "../types";
+import DeleteMethod from "./methods/DeleteMethod";
+import GetMethod from "./methods/GetMethod";
+import PostMethod from "./methods/PostMethod";
+import PutMethod from "./methods/PutMethod";
 
 type Props = {
   endpoint: ParsedApiMethod;
@@ -22,7 +21,7 @@ const MethodRenderer: React.FC<Props> = ({
     case "get":
       return (
         <GetMethod
-          endpoint={endpoint as Parameters<typeof GetMethod>[0]["endpoint"]}
+          endpoint={endpoint}
           onExecute={onExecute}
           loading={loading}
           baseUrl={baseUrl ?? ""}
@@ -31,7 +30,7 @@ const MethodRenderer: React.FC<Props> = ({
     case "post":
       return (
         <PostMethod
-          endpoint={endpoint as Parameters<typeof PostMethod>[0]["endpoint"]}
+          endpoint={endpoint}
           onExecute={onExecute}
           loading={loading}
           baseUrl={baseUrl ?? ""}
@@ -40,7 +39,7 @@ const MethodRenderer: React.FC<Props> = ({
     case "put":
       return (
         <PutMethod
-          endpoint={endpoint as Parameters<typeof PutMethod>[0]["endpoint"]}
+          endpoint={endpoint}
           onExecute={onExecute}
           loading={loading}
           baseUrl={baseUrl ?? ""}
@@ -49,7 +48,7 @@ const MethodRenderer: React.FC<Props> = ({
     case "delete":
       return (
         <DeleteMethod
-          endpoint={endpoint as Parameters<typeof DeleteMethod>[0]["endpoint"]}
+          endpoint={endpoint}
           onExecute={onExecute}
           loading={loading}
           baseUrl={baseUrl ?? ""}

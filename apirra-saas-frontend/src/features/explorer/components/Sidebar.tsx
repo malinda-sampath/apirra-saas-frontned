@@ -1,4 +1,4 @@
-import type { ParsedApiMethod } from "../../../utils/openApiParser";
+import type { ParsedApiMethod } from "../types";
 
 const METHOD_STYLES: Record<string, string> = {
   get: "method-pill method-pill-get",

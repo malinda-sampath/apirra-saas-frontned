@@ -1,4 +1,4 @@
-import type { OpenAPISpec } from "../../types/openApiType";
+import type { OpenAPISpec } from "../types";
 import { explorerApi } from "./explorerApi";
 
 export const fetchOpenApiSpec = async (url: string): Promise<OpenAPISpec> => {

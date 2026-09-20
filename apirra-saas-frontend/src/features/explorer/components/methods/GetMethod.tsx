@@ -1,30 +1,21 @@
 import { useEffect, useState } from "react";
+import type { OpenAPIV3 } from "openapi-types";
 import ParameterSection from "../ParameterSection";
 import CurlGenerator from "../CurlGenerator";
 import ResponseDisplay from "../ResponseDisplay";
 import RequestHistory from "../RequestHistory";
 import type { HistoryItem } from "../RequestHistory";
 import ToastContainer from "../ToastContainer";
-import type {
-  Parameter,
-  ResponseObject,
-  Responses,
-  Toast,
-  ExecutePayload,
-  ParsedApiMethod,
-} from "../../../../types/methodTypes";
+import type { Toast, ExecutePayload, ParsedApiMethod } from "../../types";
 
-type DeleteMethodProps = {
-  endpoint: ParsedApiMethod & {
-    parameters?: Parameter[];
-    responses?: Responses;
-  };
+type GetMethodProps = {
+  endpoint: ParsedApiMethod;
   onExecute: (payload: ExecutePayload) => Promise<unknown>;
   loading?: boolean;
   baseUrl: string;
 };
 
-const DeleteMethod: React.FC<DeleteMethodProps> = ({
+const GetMethod: React.FC<GetMethodProps> = ({
   endpoint,
   onExecute,
   loading,
@@ -40,7 +31,6 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
     "response",
   );
   const [requestHistory, setRequestHistory] = useState<HistoryItem[]>([]);
-  const [confirmArmed, setConfirmArmed] = useState(false);
 
   // Constants
   const params = endpoint.parameters ?? [];
@@ -78,18 +68,29 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
       ...prev,
       [paramName]: value,
     }));
-    // Any param edit re-arms the confirmation requirement
-    setConfirmArmed(false);
   };
 
   const handleReset = () => {
     setParamValues({});
     setResponse(null);
-    setConfirmArmed(false);
     addToast("Parameters cleared", "info");
   };
 
-  const executeDelete = async () => {
+  const handleTry = async () => {
+    // Validate required parameters
+    const missing = params.find(
+      (p) => p.required && !paramValues[p.name]?.trim(),
+    );
+
+    if (missing) {
+      addToast(`${missing.name} is required`, "error");
+      setResponse({
+        success: false,
+        error: `${missing.name} is required.`,
+      });
+      return;
+    }
+
     setIsRunning(true);
     setActiveTab("response");
 
@@ -112,7 +113,7 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
       );
 
       const res = await onExecute({
-        method: "delete",
+        method: "get",
         path: finalPath,
         baseUrl,
         queryParams,
@@ -141,38 +142,11 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
       addToast(errorMsg, "error");
     } finally {
       setIsRunning(false);
-      setConfirmArmed(false);
     }
-  };
-
-  const handleTry = async () => {
-    // Validate required parameters
-    const missing = params.find(
-      (p) => p.required && !paramValues[p.name]?.trim(),
-    );
-
-    if (missing) {
-      addToast(`${missing.name} is required`, "error");
-      setResponse({
-        success: false,
-        error: `${missing.name} is required.`,
-      });
-      return;
-    }
-
-    // DELETE is destructive — require an explicit second click to confirm.
-    if (!confirmArmed) {
-      setConfirmArmed(true);
-      addToast("Click again to confirm deletion", "info");
-      return;
-    }
-
-    await executeDelete();
   };
 
   const handleRestoreFromHistory = (params: Record<string, string>) => {
     setParamValues(params);
-    setConfirmArmed(false);
     addToast("Parameters restored", "info");
   };
 
@@ -195,7 +169,6 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
   const resetState = () => {
     setResponse(null);
     setParamValues({});
-    setConfirmArmed(false);
     setActiveTab("request");
   };
 
@@ -205,7 +178,6 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint.path]);
   // ==================== Render ==================
 
@@ -218,9 +190,9 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
             <div className="flex items-center gap-3 min-w-0">
               <span
                 className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest"
-                style={{ background: "var(--color-delete, #ef4444)" }}
+                style={{ background: "var(--color-get, #10b981)" }}
               >
-                DELETE
+                GET
               </span>
               <code className="truncate font-mono text-sm text-gray-900">
                 {baseUrl}
@@ -304,7 +276,7 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
           </h2>
           <div className="space-y-2">
             {Object.entries(responses).map(
-              ([code, resp]: [string, ResponseObject]) => {
+              ([code, resp]: [string, OpenAPIV3.ResponseObject]) => {
                 const isSuccess = code.startsWith("2");
                 return (
                   <div
@@ -334,29 +306,12 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
 
       {/* Request Execution Section */}
       <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
-        {confirmArmed && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
-            This will permanently delete the resource. Click{" "}
-            <span className="font-semibold">Confirm Delete</span> to proceed.
-          </div>
-        )}
-
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={handleTry}
             disabled={loading || isRunning}
-            className={`inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition disabled:opacity-60 sm:flex-none ${
-              confirmArmed
-                ? "bg-red-700 hover:bg-red-800"
-                : "bg-red-600 hover:bg-red-700"
-            }`}
-            aria-label={
-              isRunning
-                ? "Sending request"
-                : confirmArmed
-                  ? "Confirm delete"
-                  : "Send request"
-            }
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60 sm:flex-none"
+            aria-label={isRunning ? "Sending request" : "Send request"}
           >
             {loading || isRunning ? (
               <>
@@ -381,26 +336,15 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
                 </svg>
                 Sending…
               </>
-            ) : confirmArmed ? (
-              <>⚠ Confirm Delete</>
             ) : (
               <>▶ Send Request</>
             )}
           </button>
-
-          {confirmArmed && !isRunning && (
-            <button
-              onClick={() => setConfirmArmed(false)}
-              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-          )}
         </div>
 
         {/* cURL Generator Component */}
         <CurlGenerator
-          method="DELETE"
+          method={endpoint.method}
           baseUrl={baseUrl}
           path={finalPathForCurl}
           queryParams={queryParams}
@@ -434,4 +378,4 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
   );
 };
 
-export default DeleteMethod;
+export default GetMethod;

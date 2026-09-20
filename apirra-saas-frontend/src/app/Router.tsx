@@ -1,11 +1,11 @@
 import { Routes, Route } from "react-router-dom";
-import PreLoginHome from "../pages/ExplorerPage/PreLoginHome";
-import ExplorerPage from "../components/explorer/layout/ExplorerPage";
+import HomePage from "../pages/HomePage/HomePage";
+import ExplorerPage from "../pages/ExplorerPage/ExplorerPage";
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<PreLoginHome />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/explorer" element={<ExplorerPage />} />
     </Routes>
   );

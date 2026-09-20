@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import type { Toast } from "../../../types/methodTypes";
+import type { Toast } from "../types";
 
 type ToastContainerProps = {
   toasts: Toast[];

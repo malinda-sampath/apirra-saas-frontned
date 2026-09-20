@@ -1,10 +1,10 @@
 import React from "react";
+import type { OpenAPIV3 } from "openapi-types";
 import ParameterInput from "./ParameterInput";
-import type { Parameter } from "../../../types/methodTypes";
 
 type ParameterSectionProps = {
   title: string;
-  params: Parameter[];
+  params: OpenAPIV3.ParameterObject[];
   paramValues: Record<string, string>;
   onParamChange: (paramName: string, value: string) => void;
   disabled?: boolean;
@@ -45,7 +45,8 @@ const ParameterSection: React.FC<ParameterSectionProps> = ({
                 {p.in}
               </span>
               <span className="rounded bg-gray-200 px-2 py-0.5 text-[10px] font-medium text-gray-700">
-                {p.schema?.type ?? p.type ?? "string"}
+                {(p.schema as OpenAPIV3.SchemaObject | undefined)?.type ??
+                  "string"}
               </span>
             </div>
           </div>

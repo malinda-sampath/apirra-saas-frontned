@@ -1,42 +1,8 @@
 import type { OpenAPIV3 } from "openapi-types";
-
-/**
- * Allowed HTTP methods in OpenAPI
- */
-export const httpMethods = [
-  "get",
-  "post",
-  "put",
-  "delete",
-  "patch",
-  "options",
-  "head",
-] as const;
-
-export type HttpMethod = (typeof httpMethods)[number];
+import { httpMethods } from "../types";
+import type { HttpMethod, ParsedApiMethod } from "../types";
 
 const methodsWithBody: readonly HttpMethod[] = ["post", "put", "patch"];
-
-/**
- * UI-friendly API method model
- */
-export type ParsedApiMethod = {
-  path: string;
-  method: HttpMethod;
-
-  operationId?: string;
-  summary?: string;
-  description?: string;
-  tags: string[];
-  requestBody?: OpenAPIV3.RequestBodyObject;
-  responses: Record<string, OpenAPIV3.ResponseObject>;
-  parameters?: OpenAPIV3.ParameterObject[];
-
-  /** Auto-generated JSON example built from the resolved request body schema */
-  requestExample?: unknown;
-
-  operation: OpenAPIV3.OperationObject;
-};
 
 /**
  * Flatten OpenAPI paths into UI-ready methods

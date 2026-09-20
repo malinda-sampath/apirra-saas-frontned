@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { fetchOpenApiSpec } from "../../services/explorer/openApiService";
-import { parseOpenApi } from "../../utils/openApiParser";
-import type { ParsedApiMethod } from "../../utils/openApiParser";
-import UserInput from "../../components/explorer/UserInput";
 import { useNavigate } from "react-router-dom";
+import { fetchOpenApiSpec } from "../../features/explorer/api/openApiService";
+import { parseOpenApi } from "../../features/explorer/utils/openApiParser";
+import type { ParsedApiMethod } from "../../features/explorer/types";
+import UserInput from "../../shared/components/UserInput";
 
-const PreLoginHome = () => {
+const HomePage = () => {
   const [baseUrl, setBaseUrlState] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -135,4 +135,4 @@ const PreLoginHome = () => {
   );
 };
 
-export default PreLoginHome;
+export default HomePage;

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { HttpMethod } from "../../../types/methodTypes";
+import type { HttpMethod } from "../types";
 
 type CurlGeneratorProps = {
   method: HttpMethod;
