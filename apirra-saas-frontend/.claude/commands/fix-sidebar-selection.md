@@ -1,5 +1,8 @@
 Fix the broken active-item highlighting in `Sidebar.tsx` (see CLAUDE.md
-"Known issues" #2).
+"Known issues" #1).
+
+`Sidebar.tsx` lives at `features/explorer/components/Sidebar.tsx`;
+`ExplorerPage.tsx` lives at `pages/ExplorerPage/ExplorerPage.tsx`.
 
 Root cause: `ExplorerPage.tsx` calls
 `onSelect={(ep) => setSelected({ ...ep })}`, which spreads into a new
@@ -17,4 +20,4 @@ Steps:
 3. Manually verify: select an endpoint, confirm the sidebar row shows the
    blue background + left border, select a different one, confirm the
    highlight moves.
-4. Remove item 2 from CLAUDE.md's "Known issues" list once verified.
+4. Remove item 1 from CLAUDE.md's "Known issues" list once verified.

@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Tests (not yet committed)
+*.test.ts
+*.test.tsx
+/e2e/
+/playwright.config.ts
+/src/test/
+/test-results/

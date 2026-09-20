@@ -16,73 +16,81 @@ all client-side.
   `index.css`; utility classes like `bg-linear-to-br` confirm v4, not v3)
 
 ## Data flow
-1. **`pages/ExplorerPage/PreLoginHome.tsx`** — user enters an OpenAPI spec
-   URL. `fetchOpenApiSpec` (axios, via `services/explorer/explorerApi.ts`)
+1. **`pages/HomePage/HomePage.tsx`** — user enters an OpenAPI spec
+   URL. `fetchOpenApiSpec` (axios, via `features/explorer/api/explorerApi.ts`)
    retrieves the raw spec.
-2. **`utils/openApiParser.ts`** — `parseOpenApi()` flattens `spec.paths` into
-   a flat `ParsedApiMethod[]` (one entry per method per path), resolving
-   `$ref`s for request bodies and schemas, and building a JSON example body
-   for POST/PUT/PATCH via `generateExample()` (with circular-ref guarding).
+2. **`features/explorer/utils/openApiParser.ts`** — `parseOpenApi()` flattens
+   `spec.paths` into a flat `ParsedApiMethod[]` (one entry per method per
+   path), resolving `$ref`s for request bodies and schemas, and building a
+   JSON example body for POST/PUT/PATCH via `generateExample()` (with
+   circular-ref guarding). `ParsedApiMethod` itself is defined in
+   `features/explorer/types/index.ts`, not here.
 3. On success, `react-router-dom` navigates to `/explorer`, passing
    `{ endpoints, baseUrl }` through router `state` (not global state/context —
    if the user refreshes `/explorer` directly, this data is gone).
-4. **`components/explorer/layout/ExplorerPage.tsx`** — hosts `Sidebar` +
+4. **`pages/ExplorerPage/ExplorerPage.tsx`** — hosts `Sidebar` +
    `MethodRenderer`. Owns `selected` (currently chosen endpoint) and
    `loading`, and defines `handleExecute`, which wraps
-   `services/explorer/requestExecutor.ts`'s `executeRequest` (a raw axios
+   `features/explorer/api/requestExecutor.ts`'s `executeRequest` (a raw axios
    call assembled from `baseUrl` + `path` + query params + body).
-5. **`components/explorer/layout/Sidebar.tsx`** — groups endpoints by their
+5. **`features/explorer/components/Sidebar.tsx`** — groups endpoints by their
    first OpenAPI tag and lists them.
-6. **`components/explorer/methods/MethodRenderer.tsx`** — switches on
+6. **`features/explorer/components/MethodRenderer.tsx`** — switches on
    `endpoint.method` to render `GetMethod` / `PostMethod` / `PutMethod` /
    `DeleteMethod`. `PATCH`/`HEAD`/`OPTIONS` fall through to a "not yet
    supported" placeholder.
-7. Each method component (`get/GetMethod.tsx`, `post/PostMethod.tsx`,
-   `put/PutMethod.tsx`, `delete/DeleteMethod.tsx`) is a near-identical
+7. Each method component (`methods/GetMethod.tsx`, `methods/PostMethod.tsx`,
+   `methods/PutMethod.tsx`, `methods/DeleteMethod.tsx`) is a near-identical
    pattern: param inputs → (body editor for POST/PUT) → send button →
    cURL preview (`CurlGenerator`) → response viewer (`ResponseDisplay`) →
    history (`RequestHistory`) → toasts (`ToastContainer`).
 
-## File structure (inferred from imports — adjust if it drifts)
+## File structure
+Feature-based: route-level composition lives in `pages/`, all explorer
+business logic (components/hooks/api/types/utils) is co-located under
+`features/explorer/`, and the one truly generic, non-feature-specific UI
+piece (`UserInput`) lives in `shared/`.
 ```
 src/
-├── app/Router.tsx
-├── App.tsx
 ├── main.tsx
 ├── index.css
+├── app/
+│   ├── App.tsx
+│   └── Router.tsx
 ├── pages/
+│   ├── HomePage/
+│   │   └── HomePage.tsx        # OpenAPI spec URL entry screen ("/")
 │   └── ExplorerPage/
-│       └── PreLoginHome.tsx
-├── components/
+│       └── ExplorerPage.tsx    # sidebar + method renderer shell ("/explorer")
+├── features/
 │   └── explorer/
-│       ├── UserInput.tsx
-│       ├── layout/
-│       │   ├── ExplorerPage.tsx
-│       │   └── Sidebar.tsx
-│       └── methods/
-│           ├── MethodRenderer.tsx
-│           ├── CurlGenerator.tsx
-│           ├── ParameterSection.tsx
-│           ├── ParameterInput.tsx
-│           ├── ResponseDisplay.tsx
-│           ├── RequestHistory.tsx
-│           ├── ToastContainer.tsx
-│           ├── get/GetMethod.tsx
-│           ├── post/PostMethod.tsx
-│           ├── put/PutMethod.tsx
-│           └── delete/DeleteMethod.tsx
-├── services/
-│   ├── appApi.ts              # axios instance, fixed backend (VITE_APP_API_URL)
-│   └── explorer/
-│       ├── explorerApi.ts     # axios instance, no baseURL (target API is user-supplied)
-│       ├── openApiService.ts  # fetchOpenApiSpec
-│       └── requestExecutor.ts # executeRequest — sends the actual "Try it" request
-├── types/
-│   ├── methodTypes.ts
-│   ├── executPayload.ts
-│   └── openApiType.ts
-└── utils/
-    └── openApiParser.ts
+│       ├── api/
+│       │   ├── explorerApi.ts     # axios instance, no baseURL (target API is user-supplied)
+│       │   ├── openApiService.ts  # fetchOpenApiSpec
+│       │   └── requestExecutor.ts # executeRequest — sends the actual "Try it" request
+│       ├── components/
+│       │   ├── Sidebar.tsx
+│       │   ├── MethodRenderer.tsx
+│       │   ├── CurlGenerator.tsx
+│       │   ├── ParameterSection.tsx
+│       │   ├── ParameterInput.tsx
+│       │   ├── ResponseDisplay.tsx
+│       │   ├── RequestHistory.tsx
+│       │   ├── ToastContainer.tsx
+│       │   └── methods/
+│       │       ├── GetMethod.tsx
+│       │       ├── PostMethod.tsx
+│       │       ├── PutMethod.tsx
+│       │       └── DeleteMethod.tsx
+│       ├── types/
+│       │   └── index.ts        # canonical ParsedApiMethod, ExecutePayload, HttpMethod, Toast, OpenAPISpec
+│       └── utils/
+│           └── openApiParser.ts
+├── shared/
+│   └── components/
+│       └── UserInput.tsx
+└── services/
+    └── appApi.ts                # axios instance, fixed backend (VITE_APP_API_URL) — status: see known issue below
 ```
 
 ## Conventions already established — follow these for new code
@@ -112,43 +120,32 @@ src/
   editing these components.
 
 ## Known issues / tech debt (be aware of these, don't "fix" them silently)
-1. **Two conflicting definitions each of `ParsedApiMethod` and
-   `ExecutePayload`:**
-   - `utils/openApiParser.ts` defines the "real" `ParsedApiMethod` (full
-     OpenAPI data: tags, responses, requestBody, etc.) — this is what
-     actually flows through the app.
-   - `types/methodTypes.ts` defines a second, much thinner `ParsedApiMethod`
-     (just `path`/`summary`/`description`), which is what the method
-     components import and intersect with `{ parameters, responses }`.
-   - `types/methodTypes.ts` also defines an `ExecutePayload` *without* a
-     `body` field, while `types/executPayload.ts` defines a *different*
-     `ExecutePayload` that includes `body`. This is exactly why
-     `PostMethod`/`PutMethod` have to `as unknown as ExecutePayload`-cast
-     their payload before calling `onExecute` — the thinner type would
-     otherwise reject `body`.
-   - **Don't paper over this with more casts.** If you touch this code,
-     the fix is to pick one canonical definition per type (the richer ones)
-     and delete the thin duplicates + update imports across method
-     components.
-2. **Sidebar active-item highlighting never actually works.**
-   `ExplorerPage` does `onSelect={(ep) => setSelected({ ...ep })}`, spreading
-   into a brand-new object each time. `Sidebar` then checks
-   `const isActive = selected === ep` — reference equality against the
-   original array item. Since `selected` is never the same reference as any
-   `ep`, `isActive` is always `false`, so the blue "active" highlight never
-   appears. Fix by either not spreading (`setSelected(ep)`), or comparing by
-   `method + path` instead of object identity.
-3. **`ResponseDisplay`'s "Request Details" tab hardcodes the method label as
+1. **`ResponseDisplay`'s "Request Details" tab hardcodes the method label as
    `GET`** regardless of what method was actually sent — it isn't passed the
    real method and should be.
-4. **`services/appApi.ts` appears unused** in everything shown so far —
+2. **`services/appApi.ts` appears unused** in everything shown so far —
    confirm whether it's dead code or reserved for an upcoming
    auth/account feature before deleting it.
-5. **`PATCH`/`HEAD`/`OPTIONS`** are recognized in the OpenAPI parser and
+3. **`PATCH`/`HEAD`/`OPTIONS`** are recognized in the OpenAPI parser and
    type unions but have no method component / `MethodRenderer` case yet.
-6. **Router state, not persisted state**: `/explorer` depends entirely on
+4. **Router state, not persisted state**: `/explorer` depends entirely on
    `location.state.endpoints`/`baseUrl`. A hard refresh or direct link to
    `/explorer` lands on an empty state with no redirect/guard back to `/`.
+
+~~**Two conflicting definitions each of `ParsedApiMethod` and
+`ExecutePayload`.**~~ **Fixed** (2026-09-20): consolidated into
+`features/explorer/types/index.ts`. Method components now take the
+canonical `ParsedApiMethod` directly (no more
+`& { parameters?: Parameter[]; responses?: Responses }` intersection), and
+`PostMethod`/`PutMethod` no longer need the `as unknown as ExecutePayload`
+cast. `ParameterSection`/`ParameterInput`/`CurlGenerator` now use
+`OpenAPIV3.ParameterObject` / the shared `HttpMethod` type instead of the
+deleted thin shadows in the old `types/methodTypes.ts`. The two conflicting
+`HttpMethod` definitions (uppercase in `methodTypes.ts` vs. lowercase in
+`openApiParser.ts`) were the same class of bug and are consolidated too —
+`CurlGenerator` now receives `endpoint.method` (lowercase) instead of a
+hardcoded uppercase literal per method component; it already normalized
+case internally so this is not a behavior change.
 
 ## Commands
 > Scripts below are the standard Vite defaults — check `package.json` and
@@ -161,12 +158,24 @@ npm run preview      # preview a production build
 npm run lint          # eslint
 ```
 
+## Deployment
+This project directory (`apirra-saas-frontend/`) is nested one level inside
+the git repo root (`apirra-saas-frontned/`). The GitHub Actions workflow that
+builds and deploys it lives **outside this directory**, at
+`../.github/workflows/deploy.yml` (repo root), not under a `.github/` folder
+inside this project. On every push to `main` it runs `npm ci` / `npm run
+build` with `working-directory: ./apirra-saas-frontend`, then publishes
+`./apirra-saas-frontend/dist` to GitHub Pages. If you rename this directory
+or change the build output path, update that workflow file too — it won't
+show up in a search scoped to this project folder.
+
 ## What "done" looks like for a task in this repo
 1. New/changed code follows the existing method-component pattern (state
    shape, toast usage, reset-on-endpoint-change effect) rather than
    introducing a new one.
-2. No new type duplication — reuse `ParsedApiMethod` from
-   `utils/openApiParser.ts` and `ExecutePayload` from `types/executPayload.ts`
-   rather than the thinner shadows in `types/methodTypes.ts`.
+2. No new type duplication — reuse `ParsedApiMethod`, `ExecutePayload`,
+   `HttpMethod`, and `Toast` from `features/explorer/types/index.ts` (or
+   `OpenAPIV3.*` from `openapi-types` directly) rather than re-declaring a
+   thinner local shape.
 3. `npm run lint` and `tsc` (via `npm run build`) pass.
 4. If you fix one of the known issues above, remove it from this list.
