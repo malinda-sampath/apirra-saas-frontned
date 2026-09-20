@@ -5,20 +5,31 @@ import { parseOpenApi } from "../../features/explorer/utils/openApiParser";
 import type { ParsedApiMethod } from "../../features/explorer/types";
 import UserInput from "../../shared/components/UserInput";
 
+// Hosted alongside this app (see public/test-doc.json) so anyone without
+// their own OpenAPI-documented backend can still try every HTTP method.
+// Its `paths` point at JSONPlaceholder, a public sandbox API, so requests
+// must target that origin directly rather than the URL the spec itself was
+// fetched from - see handleLoadDemo below.
+const DEMO_SPEC_PATH = "/test-doc.json";
+const DEMO_BASE_URL = "https://jsonplaceholder.typicode.com";
+
 const HomePage = () => {
   const [baseUrl, setBaseUrlState] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLoad = async () => {
+  const loadExplorer = async (
+    specUrl: string,
+    requestBaseUrl: string,
+    errorMessage: string,
+  ) => {
     setError("");
 
     try {
       setLoading(true);
-      setError("");
 
-      const spec = await fetchOpenApiSpec(baseUrl);
+      const spec = await fetchOpenApiSpec(specUrl);
 
       // extra safety check (important)
       if (!spec) {
@@ -32,7 +43,7 @@ const HomePage = () => {
         navigate("/explorer", {
           state: {
             endpoints: parsed,
-            baseUrl,
+            baseUrl: requestBaseUrl,
           },
         });
       } else {
@@ -40,11 +51,25 @@ const HomePage = () => {
       }
     } catch (err) {
       console.error(err);
-      setError("Failed to load API spec. Check the URL and try again.");
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleLoad = () =>
+    loadExplorer(
+      baseUrl,
+      baseUrl,
+      "Failed to load API spec. Check the URL and try again.",
+    );
+
+  const handleLoadDemo = () =>
+    loadExplorer(
+      DEMO_SPEC_PATH,
+      DEMO_BASE_URL,
+      "Failed to load the demo API. Please try again.",
+    );
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -121,6 +146,46 @@ const HomePage = () => {
                 "Load API Explorer"
               )}
             </button>
+
+            {/* Demo divider */}
+            <div className="relative py-1">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-3 text-[11px] font-medium uppercase tracking-wider text-gray-400">
+                  or
+                </span>
+              </div>
+            </div>
+
+            {/* No environment? Try the demo spec */}
+            <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+              <p className="text-sm font-medium text-gray-800">
+                Don&apos;t have an API to test with?
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Launch a ready-made demo spec that exercises GET, POST, PUT
+                and DELETE against a public sandbox API — safe to experiment
+                with freely, no backend of your own required.
+              </p>
+
+              <button
+                onClick={handleLoadDemo}
+                disabled={loading}
+                className="mt-3 w-full rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Connecting…" : "Try the Demo API"}
+              </button>
+
+              <p className="mt-2 truncate text-[11px] text-gray-400">
+                Demo spec:{" "}
+                <code className="font-mono">
+                  {window.location.origin}
+                  {DEMO_SPEC_PATH}
+                </code>
+              </p>
+            </div>
 
             {/* Footer hint */}
             <div className="text-center pt-2">
