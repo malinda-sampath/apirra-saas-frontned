@@ -43,7 +43,7 @@ const ExplorerPage = () => {
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar
         endpoints={endpoints}
-        onSelect={(ep) => setSelected({ ...ep })}
+        onSelect={(ep) => setSelected(ep)}
         selected={selected}
       />
 

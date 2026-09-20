@@ -120,23 +120,15 @@ src/
   editing these components.
 
 ## Known issues / tech debt (be aware of these, don't "fix" them silently)
-1. **Sidebar active-item highlighting never actually works.**
-   `ExplorerPage` does `onSelect={(ep) => setSelected({ ...ep })}`, spreading
-   into a brand-new object each time. `Sidebar` then checks
-   `const isActive = selected === ep` — reference equality against the
-   original array item. Since `selected` is never the same reference as any
-   `ep`, `isActive` is always `false`, so the blue "active" highlight never
-   appears. Fix by either not spreading (`setSelected(ep)`), or comparing by
-   `method + path` instead of object identity.
-2. **`ResponseDisplay`'s "Request Details" tab hardcodes the method label as
+1. **`ResponseDisplay`'s "Request Details" tab hardcodes the method label as
    `GET`** regardless of what method was actually sent — it isn't passed the
    real method and should be.
-3. **`services/appApi.ts` appears unused** in everything shown so far —
+2. **`services/appApi.ts` appears unused** in everything shown so far —
    confirm whether it's dead code or reserved for an upcoming
    auth/account feature before deleting it.
-4. **`PATCH`/`HEAD`/`OPTIONS`** are recognized in the OpenAPI parser and
+3. **`PATCH`/`HEAD`/`OPTIONS`** are recognized in the OpenAPI parser and
    type unions but have no method component / `MethodRenderer` case yet.
-5. **Router state, not persisted state**: `/explorer` depends entirely on
+4. **Router state, not persisted state**: `/explorer` depends entirely on
    `location.state.endpoints`/`baseUrl`. A hard refresh or direct link to
    `/explorer` lands on an empty state with no redirect/guard back to `/`.
 

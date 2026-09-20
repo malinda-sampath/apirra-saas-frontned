@@ -1,4 +1,5 @@
-import type { ParsedApiMethod } from "../types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { HttpMethod, ParsedApiMethod } from "../types";
 
 const METHOD_STYLES: Record<string, string> = {
   get: "method-pill method-pill-get",
@@ -8,14 +9,81 @@ const METHOD_STYLES: Record<string, string> = {
   patch: "method-pill method-pill-patch",
 };
 
+const METHOD_ORDER: HttpMethod[] = [
+  "get",
+  "post",
+  "put",
+  "delete",
+  "patch",
+  "options",
+  "head",
+];
+
 type Props = {
   endpoints: ParsedApiMethod[];
   onSelect: (ep: ParsedApiMethod) => void;
   selected: ParsedApiMethod | null;
 };
 
+const isSameEndpoint = (a: ParsedApiMethod | null, b: ParsedApiMethod) =>
+  !!a && a.method === b.method && a.path === b.path;
+
+const matchesQuery = (ep: ParsedApiMethod, query: string) => {
+  if (!query) return true;
+  return (
+    ep.path.toLowerCase().includes(query) ||
+    ep.method.toLowerCase().includes(query) ||
+    ep.summary?.toLowerCase().includes(query) ||
+    ep.description?.toLowerCase().includes(query) ||
+    ep.operationId?.toLowerCase().includes(query) ||
+    ep.tags?.some((tag) => tag.toLowerCase().includes(query))
+  );
+};
+
 const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
-  const grouped = endpoints.reduce(
+  const [query, setQuery] = useState("");
+  const [activeMethods, setActiveMethods] = useState<Set<HttpMethod>>(
+    new Set(),
+  );
+  const [collapsedTags, setCollapsedTags] = useState<Set<string>>(new Set());
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Focus the search box with "/" from anywhere on the page.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isTyping =
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable;
+      if (e.key === "/" && !isTyping) {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const availableMethods = useMemo(() => {
+    const present = new Set(endpoints.map((ep) => ep.method));
+    return METHOD_ORDER.filter((m) => present.has(m));
+  }, [endpoints]);
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const isSearching = normalizedQuery !== "" || activeMethods.size > 0;
+
+  const filtered = useMemo(
+    () =>
+      endpoints.filter(
+        (ep) =>
+          (activeMethods.size === 0 || activeMethods.has(ep.method)) &&
+          matchesQuery(ep, normalizedQuery),
+      ),
+    [endpoints, activeMethods, normalizedQuery],
+  );
+
+  const grouped = filtered.reduce(
     (acc, ep) => {
       const tag = ep.tags?.[0] || "default";
       if (!acc[tag]) acc[tag] = [];
@@ -25,74 +93,212 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
     {} as Record<string, ParsedApiMethod[]>,
   );
 
+  const toggleMethod = (method: HttpMethod) => {
+    setActiveMethods((prev) => {
+      const next = new Set(prev);
+      if (next.has(method)) next.delete(method);
+      else next.add(method);
+      return next;
+    });
+  };
+
+  const toggleGroup = (tag: string) => {
+    setCollapsedTags((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag);
+      else next.add(tag);
+      return next;
+    });
+  };
+
   return (
     <aside className="flex w-80 flex-col border-r border-gray-200 bg-white">
       {/* SEARCH + HEADER */}
       <div className="border-b border-gray-100 px-4 py-3">
-        {/* <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-500">
-          API Endpoints
-        </p> */}
+        <div className="relative mt-1">
+          <svg
+            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+            />
+          </svg>
 
-        <input
-          className="w-full mt-3 rounded-md border border-gray-200 bg-white px-3 py-2 text-xs text-gray-700 placeholder-gray-400 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
-          placeholder="Search endpoints..."
-        />
+          <input
+            ref={searchRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full rounded-md border border-gray-200 bg-white py-2 pl-8 pr-7 text-xs text-gray-700 placeholder-gray-400 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+            placeholder="Search endpoints... (press /)"
+          />
+
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            >
+              <svg
+                className="h-3 w-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {/* METHOD FILTER CHIPS */}
+        {availableMethods.length > 1 && (
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {availableMethods.map((method) => {
+              const isActive = activeMethods.has(method);
+              return (
+                <button
+                  key={method}
+                  onClick={() => toggleMethod(method)}
+                  className={`${METHOD_STYLES[method] ?? "method-pill bg-gray-100 text-gray-600"} cursor-pointer transition-opacity ${
+                    activeMethods.size > 0 && !isActive
+                      ? "opacity-35"
+                      : "opacity-100"
+                  } ${isActive ? "ring-2 ring-offset-1 ring-blue-300" : ""}`}
+                >
+                  {method.toUpperCase()}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <p className="mt-2.5 text-[11px] text-gray-400">
+          {isSearching
+            ? `${filtered.length} of ${endpoints.length} endpoints`
+            : `${endpoints.length} endpoints`}
+        </p>
       </div>
 
       {/* LIST */}
       <nav className="flex-1 overflow-y-auto py-2">
-        {Object.entries(grouped).map(([tag, eps]) => (
-          <div key={tag} className="mb-6">
-            {/* GROUP HEADER */}
-            <div className="px-3 mb-2">
-              <div className="flex items-center justify-between">
-                <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-700">
+        {filtered.length === 0 && (
+          <div className="flex flex-col items-center px-6 py-12 text-center">
+            <svg
+              className="mb-2 h-8 w-8 text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+              />
+            </svg>
+            <p className="text-xs font-medium text-gray-500">
+              No endpoints match
+            </p>
+            <p className="mt-1 text-[11px] text-gray-400">
+              Try a different search term or method filter.
+            </p>
+          </div>
+        )}
+
+        {Object.entries(grouped).map(([tag, eps]) => {
+          const isCollapsed = !isSearching && collapsedTags.has(tag);
+
+          return (
+            <div key={tag} className="mb-2">
+              {/* GROUP HEADER */}
+              <button
+                onClick={() => toggleGroup(tag)}
+                className="flex w-full items-center justify-between px-5 py-1.5 text-left hover:bg-gray-50"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-700">
                   {tag} ({eps.length})
                 </p>
-              </div>
-            </div>
-
-            {/* ITEMS */}
-            <div className="space-y-1 px-2">
-              {eps.map((ep, i) => {
-                const isActive = selected === ep;
-
-                return (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      onSelect(ep);
-                    }}
-                    className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors
-                  ${
-                    isActive
-                      ? "bg-blue-50 border-l-4 border-blue-500"
-                      : "hover:bg-gray-50"
+                <svg
+                  className={`h-3 w-3 text-gray-400 transition-transform ${
+                    isCollapsed ? "-rotate-90" : ""
                   }`}
-                  >
-                    {/* METHOD */}
-                    <span
-                      className={`text-[10px] font-bold tracking-wide px-2 py-1 rounded-md ${
-                        METHOD_STYLES[ep.method] ?? "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {ep.method.toUpperCase()}
-                    </span>
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
 
-                    {/* PATH */}
-                    <span
-                      className={`flex-1 truncate font-mono text-xs ${
-                        isActive ? "text-blue-700 font-medium" : "text-gray-600"
+              {/* ITEMS */}
+              {!isCollapsed && (
+                <div className="space-y-1 px-2 pt-1">
+                  {eps.map((ep) => {
+                    const isActive = isSameEndpoint(selected, ep);
+
+                    return (
+                      <button
+                        key={`${ep.method}-${ep.path}`}
+                        onClick={() => onSelect(ep)}
+                        title={ep.summary || ep.path}
+                        className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors
+                      ${
+                        isActive
+                          ? "bg-blue-50 border-l-4 border-blue-500"
+                          : "border-l-4 border-transparent hover:bg-gray-50"
                       }`}
-                    >
-                      {ep.path}
-                    </span>
-                  </button>
-                );
-              })}
+                      >
+                        {/* METHOD */}
+                        <span
+                          className={`text-[10px] font-bold tracking-wide px-2 py-1 rounded-md ${
+                            METHOD_STYLES[ep.method] ??
+                            "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {ep.method.toUpperCase()}
+                        </span>
+
+                        {/* PATH */}
+                        <span className="min-w-0 flex-1">
+                          <span
+                            className={`block truncate font-mono text-xs ${
+                              isActive
+                                ? "text-blue-700 font-medium"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {ep.path}
+                          </span>
+                          {ep.summary && (
+                            <span className="block truncate text-[10px] text-gray-400">
+                              {ep.summary}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </nav>
     </aside>
   );
