@@ -23,6 +23,8 @@ type Props = {
   endpoints: ParsedApiMethod[];
   onSelect: (ep: ParsedApiMethod) => void;
   selected: ParsedApiMethod | null;
+  isOpen?: boolean;
+  onClose?: () => void;
 };
 
 const isSameEndpoint = (a: ParsedApiMethod | null, b: ParsedApiMethod) =>
@@ -40,7 +42,13 @@ const matchesQuery = (ep: ParsedApiMethod, query: string) => {
   );
 };
 
-const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
+const Sidebar: React.FC<Props> = ({
+  endpoints,
+  onSelect,
+  selected,
+  isOpen = false,
+  onClose,
+}) => {
   const [query, setQuery] = useState("");
   const [activeMethods, setActiveMethods] = useState<Set<HttpMethod>>(
     new Set(),
@@ -112,9 +120,37 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
   };
 
   return (
-    <aside className="flex w-80 flex-col border-r border-white/10 bg-white/[0.02]">
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 bg-[#05070d] shadow-2xl shadow-black/50 transition-transform duration-200 ease-out md:static md:z-auto md:w-80 md:translate-x-0 md:bg-white/[0.02] md:shadow-none ${
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
       {/* SEARCH + HEADER */}
       <div className="border-b border-white/10 px-4 py-3">
+        <div className="mb-1 flex items-center justify-between md:hidden">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+            Endpoints
+          </p>
+          <button
+            onClick={onClose}
+            aria-label="Close sidebar"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:bg-white/10 hover:text-white"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
         <div className="relative mt-1">
           <svg
             className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500"

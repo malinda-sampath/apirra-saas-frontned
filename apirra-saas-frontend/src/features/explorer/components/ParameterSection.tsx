@@ -31,8 +31,8 @@ const ParameterSection: React.FC<ParameterSectionProps> = ({
           key={i}
           className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.02] p-3 transition hover:border-white/20"
         >
-          <div className="flex items-center gap-2">
-            <code className="font-mono text-sm font-semibold text-blue-300">
+          <div className="flex flex-wrap items-center gap-2">
+            <code className="font-mono text-sm font-semibold text-blue-300 break-all">
               {p.name}
             </code>
             {p.required && (

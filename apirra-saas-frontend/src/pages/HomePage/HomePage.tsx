@@ -282,7 +282,7 @@ const HomePage = () => {
             <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-2xl shadow-black/40 backdrop-blur-xl">
               <div className="h-1 bg-linear-to-r from-blue-500 via-cyan-400 to-violet-500" />
 
-              <div className="space-y-5 p-8">
+              <div className="space-y-5 p-5 sm:p-8">
                 {/* Input section */}
                 <div>
                   <UserInput

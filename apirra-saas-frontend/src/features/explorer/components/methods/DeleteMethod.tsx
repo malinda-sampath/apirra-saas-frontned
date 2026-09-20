@@ -201,16 +201,16 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
   // ==================== Render ==================
 
   return (
-    <div className="mx-auto w-full max-w-auto space-y-6 p-4">
+    <div className="mx-auto w-full max-w-auto space-y-4 p-3 sm:space-y-6 sm:p-4">
       {/* Header */}
-      <div className="rounded-xl border border-white/10 bg-linear-to-br from-white/[0.05] to-white/[0.01] p-6">
+      <div className="rounded-xl border border-white/10 bg-linear-to-br from-white/[0.05] to-white/[0.01] p-4 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-2 min-w-0">
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
               <span className="method-pill method-pill-delete rounded-lg px-3 py-1 text-xs tracking-widest">
                 DELETE
               </span>
-              <code className="truncate font-mono text-sm text-white">
+              <code className="min-w-0 flex-1 break-all font-mono text-sm text-white">
                 {baseUrl}
                 {endpoint.path}
               </code>
@@ -224,7 +224,7 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
 
       {/* Parameters Section */}
       {params.length > 0 && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Parameters</h2>
             <button
@@ -286,7 +286,7 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
 
       {/* Responses Documentation */}
       {Object.keys(responses).length > 0 && (
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
           <h2 className="mb-4 text-lg font-semibold text-white">
             Response Status Codes
           </h2>
@@ -321,7 +321,7 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
       )}
 
       {/* Request Execution Section */}
-      <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6">
+      <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-4 sm:p-6">
         {confirmArmed && (
           <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
             This will permanently delete the resource. Click{" "}

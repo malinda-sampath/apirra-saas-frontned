@@ -44,7 +44,7 @@ const ResponseDisplay: React.FC<ResponseDisplayProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
         <button
           onClick={() => onTabChange("response")}
           className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${

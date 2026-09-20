@@ -15,6 +15,7 @@ const ExplorerPage = () => {
   const baseUrl: string = location.state?.baseUrl || "";
   const [selected, setSelected] = useState<ParsedApiMethod | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleExecute = async (payload: ExecutePayload) => {
     setLoading(true);
@@ -42,19 +43,55 @@ const ExplorerPage = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#05070d]">
+      {/* Mobile drawer backdrop */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+          className="fixed inset-0 z-30 bg-black/60 md:hidden"
+        />
+      )}
+
       <Sidebar
         endpoints={endpoints}
-        onSelect={(ep) => setSelected(ep)}
+        onSelect={(ep) => {
+          setSelected(ep);
+          setSidebarOpen(false);
+        }}
         selected={selected}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-18 items-center border-b border-white/10 bg-[#05070d]/80 px-6 backdrop-blur-xl">
+        <header className="flex h-16 items-center border-b border-white/10 bg-[#05070d]/80 px-3 backdrop-blur-xl sm:h-18 sm:px-6">
           {/* LEFT SIDE */}
           <div className="flex items-center">
             <button
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
+              className="mr-1 flex h-9 w-9 items-center justify-center rounded-md text-slate-300 hover:bg-white/10 hover:text-white md:hidden"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+
+            <button
               onClick={() => window.history.back()}
-              className="mr-3 flex h-9 w-9 items-center justify-center rounded-md text-slate-300 hover:bg-white/10 hover:text-white"
+              aria-label="Go back"
+              className="mr-1 flex h-9 w-9 items-center justify-center rounded-md text-slate-300 hover:bg-white/10 hover:text-white sm:mr-3"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -76,7 +113,7 @@ const ExplorerPage = () => {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6">
           {selected ? (
             <MethodRenderer
               key={`${selected.method}-${selected.path}`}
