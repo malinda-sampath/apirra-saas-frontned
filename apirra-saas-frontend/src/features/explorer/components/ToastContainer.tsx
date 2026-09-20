@@ -54,7 +54,7 @@ const ToastContainer: React.FC<ToastContainerProps> = ({
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`animate-in fade-in slide-in-from-right-2 rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg transition ${getToastColor(
+          className={`animate-in fade-in slide-in-from-right-2 rounded-lg px-4 py-3 text-sm font-medium text-white shadow-lg shadow-black/40 ring-1 ring-white/10 transition ${getToastColor(
             toast.type,
           )}`}
           role="status"

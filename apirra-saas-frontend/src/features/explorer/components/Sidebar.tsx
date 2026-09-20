@@ -112,12 +112,12 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
   };
 
   return (
-    <aside className="flex w-80 flex-col border-r border-gray-200 bg-white">
+    <aside className="flex w-80 flex-col border-r border-white/10 bg-white/[0.02]">
       {/* SEARCH + HEADER */}
-      <div className="border-b border-gray-100 px-4 py-3">
+      <div className="border-b border-white/10 px-4 py-3">
         <div className="relative mt-1">
           <svg
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400"
+            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -134,7 +134,7 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
             ref={searchRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-md border border-gray-200 bg-white py-2 pl-8 pr-7 text-xs text-gray-700 placeholder-gray-400 outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+            className="w-full rounded-md border border-white/10 bg-white/5 py-2 pl-8 pr-7 text-xs text-white placeholder-slate-500 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20"
             placeholder="Search endpoints... (press /)"
           />
 
@@ -142,7 +142,7 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
             <button
               onClick={() => setQuery("")}
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              className="absolute right-2 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 hover:bg-white/10 hover:text-white"
             >
               <svg
                 className="h-3 w-3"
@@ -170,11 +170,11 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
                 <button
                   key={method}
                   onClick={() => toggleMethod(method)}
-                  className={`${METHOD_STYLES[method] ?? "method-pill bg-gray-100 text-gray-600"} cursor-pointer transition-opacity ${
+                  className={`${METHOD_STYLES[method] ?? "method-pill bg-white/10 text-slate-300"} cursor-pointer transition-opacity ${
                     activeMethods.size > 0 && !isActive
                       ? "opacity-35"
                       : "opacity-100"
-                  } ${isActive ? "ring-2 ring-offset-1 ring-blue-300" : ""}`}
+                  } ${isActive ? "ring-2 ring-blue-400" : ""}`}
                 >
                   {method.toUpperCase()}
                 </button>
@@ -183,7 +183,7 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
           </div>
         )}
 
-        <p className="mt-2.5 text-[11px] text-gray-400">
+        <p className="mt-2.5 text-[11px] text-slate-500">
           {isSearching
             ? `${filtered.length} of ${endpoints.length} endpoints`
             : `${endpoints.length} endpoints`}
@@ -195,7 +195,7 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
         {filtered.length === 0 && (
           <div className="flex flex-col items-center px-6 py-12 text-center">
             <svg
-              className="mb-2 h-8 w-8 text-gray-300"
+              className="mb-2 h-8 w-8 text-slate-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -207,10 +207,10 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
                 d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
               />
             </svg>
-            <p className="text-xs font-medium text-gray-500">
+            <p className="text-xs font-medium text-slate-400">
               No endpoints match
             </p>
-            <p className="mt-1 text-[11px] text-gray-400">
+            <p className="mt-1 text-[11px] text-slate-500">
               Try a different search term or method filter.
             </p>
           </div>
@@ -224,13 +224,13 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
               {/* GROUP HEADER */}
               <button
                 onClick={() => toggleGroup(tag)}
-                className="flex w-full items-center justify-between px-5 py-1.5 text-left hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-5 py-1.5 text-left hover:bg-white/5"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-700">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
                   {tag} ({eps.length})
                 </p>
                 <svg
-                  className={`h-3 w-3 text-gray-400 transition-transform ${
+                  className={`h-3 w-3 text-slate-500 transition-transform ${
                     isCollapsed ? "-rotate-90" : ""
                   }`}
                   fill="none"
@@ -260,15 +260,15 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
                         className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-left transition-colors
                       ${
                         isActive
-                          ? "bg-blue-50 border-l-4 border-blue-500"
-                          : "border-l-4 border-transparent hover:bg-gray-50"
+                          ? "bg-blue-500/10 border-l-4 border-blue-400"
+                          : "border-l-4 border-transparent hover:bg-white/5"
                       }`}
                       >
                         {/* METHOD */}
                         <span
                           className={`text-[10px] font-bold tracking-wide px-2 py-1 rounded-md ${
                             METHOD_STYLES[ep.method] ??
-                            "bg-gray-100 text-gray-600"
+                            "bg-white/10 text-slate-300"
                           }`}
                         >
                           {ep.method.toUpperCase()}
@@ -279,14 +279,14 @@ const Sidebar: React.FC<Props> = ({ endpoints, onSelect, selected }) => {
                           <span
                             className={`block truncate font-mono text-xs ${
                               isActive
-                                ? "text-blue-700 font-medium"
-                                : "text-gray-600"
+                                ? "text-blue-300 font-medium"
+                                : "text-slate-300"
                             }`}
                           >
                             {ep.path}
                           </span>
                           {ep.summary && (
-                            <span className="block truncate text-[10px] text-gray-400">
+                            <span className="block truncate text-[10px] text-slate-500">
                               {ep.summary}
                             </span>
                           )}

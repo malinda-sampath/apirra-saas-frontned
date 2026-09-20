@@ -18,8 +18,8 @@ const RequestHistory: React.FC<RequestHistoryProps> = ({
   if (history.length === 0) return null;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+      <h2 className="mb-4 text-lg font-semibold text-white">
         Request History
       </h2>
       <div className="space-y-2">
@@ -27,11 +27,11 @@ const RequestHistory: React.FC<RequestHistoryProps> = ({
           <button
             key={idx}
             onClick={() => onSelectRequest(req.params)}
-            className="w-full rounded-lg bg-gray-50 p-3 text-left transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg border border-white/10 bg-white/[0.02] p-3 text-left transition hover:border-blue-400/40 hover:bg-blue-500/10 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
             aria-label={`Restore request from ${req.timestamp}`}
           >
-            <p className="text-xs font-medium text-gray-500">{req.timestamp}</p>
-            <code className="block truncate text-sm font-mono text-gray-900">
+            <p className="text-xs font-medium text-slate-500">{req.timestamp}</p>
+            <code className="block truncate text-sm font-mono text-white">
               {req.path}
             </code>
           </button>

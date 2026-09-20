@@ -12,13 +12,13 @@ const UserInput: React.FC<UserInputProps> = ({
   return (
     <div className="w-full">
       {label && (
-        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-400">
           {label}
         </label>
       )}
       <input
         type="text"
-        className={`w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 ${className}`}
+        className={`w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-500 hover:border-white/20 focus:border-blue-400 focus:bg-white/5 focus:ring-2 focus:ring-blue-500/20 ${className}`}
         {...props}
       />
     </div>

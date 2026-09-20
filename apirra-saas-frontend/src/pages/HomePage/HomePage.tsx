@@ -4,6 +4,7 @@ import { fetchOpenApiSpec } from "../../features/explorer/api/openApiService";
 import { parseOpenApi } from "../../features/explorer/utils/openApiParser";
 import type { ParsedApiMethod } from "../../features/explorer/types";
 import UserInput from "../../shared/components/UserInput";
+import Logo from "../../shared/components/Logo";
 
 // Hosted alongside this app (see public/test-doc.json) so anyone without
 // their own OpenAPI-documented backend can still try every HTTP method.
@@ -161,20 +162,6 @@ const FeatureCard = ({ icon, title, description }: Feature) => (
   </div>
 );
 
-const Logo = ({ className = "" }: { className?: string }) => (
-  <div className={`flex items-center gap-2 ${className}`}>
-    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-blue-500 to-violet-500 text-sm font-bold text-white shadow-[0_0_20px_-4px_rgba(99,102,241,0.8)]">
-      A
-    </div>
-    <span className="text-lg font-bold tracking-tight text-white">
-      API
-      <span className="bg-linear-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">
-        RRA
-      </span>
-    </span>
-  </div>
-);
-
 const HomePage = () => {
   const [baseUrl, setBaseUrlState] = useState("");
   const [loading, setLoading] = useState(false);
@@ -304,7 +291,6 @@ const HomePage = () => {
                     value={baseUrl}
                     onChange={(e) => setBaseUrlState(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleLoad()}
-                    className="!bg-white/5 !border-white/10 !text-white placeholder:!text-slate-500 hover:!border-white/20 focus:!border-blue-400 focus:!bg-white/5 focus:!ring-2 focus:!ring-blue-500/20"
                   />
 
                   <p className="mt-2 text-xs text-slate-500">

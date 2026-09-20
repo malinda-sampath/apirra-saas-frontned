@@ -7,6 +7,7 @@ import type {
   ParsedApiMethod,
   ExecutePayload,
 } from "../../features/explorer/types";
+import Logo from "../../shared/components/Logo";
 
 const ExplorerPage = () => {
   const location = useLocation();
@@ -40,7 +41,7 @@ const ExplorerPage = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-[#05070d]">
       <Sidebar
         endpoints={endpoints}
         onSelect={(ep) => setSelected(ep)}
@@ -48,16 +49,16 @@ const ExplorerPage = () => {
       />
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-18 items-center border-b border-gray-200 bg-white px-6">
+        <header className="flex h-18 items-center border-b border-white/10 bg-[#05070d]/80 px-6 backdrop-blur-xl">
           {/* LEFT SIDE */}
           <div className="flex items-center">
             <button
               onClick={() => window.history.back()}
-              className="mr-3 flex h-9 w-9 items-center justify-center rounded-md hover:bg-gray-100"
+              className="mr-3 flex h-9 w-9 items-center justify-center rounded-md text-slate-300 hover:bg-white/10 hover:text-white"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-700"
+                className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -71,9 +72,7 @@ const ExplorerPage = () => {
               </svg>
             </button>
 
-            <h1 className="text-base font-semibold tracking-tight text-[28px] text-gray-900">
-              API<span className="text-blue-500">RRA</span>
-            </h1>
+            <Logo />
           </div>
         </header>
 
@@ -88,7 +87,7 @@ const ExplorerPage = () => {
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
                 <svg
                   className="h-7 w-7 text-blue-400"
                   fill="none"
@@ -103,10 +102,10 @@ const ExplorerPage = () => {
                   />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-white">
                 Select an endpoint
               </p>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-slate-500">
                 Choose a route from the sidebar to inspect it
               </p>
             </div>

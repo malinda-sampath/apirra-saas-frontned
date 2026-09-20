@@ -2,21 +2,23 @@
 
 @layer base {
   :root {
-    --color-get: #e6f1fb;
-    --color-get-text: #0c447c;
-    --color-post: #eaf3de;
-    --color-post-text: #27500a;
-    --color-put: #faeeda;
-    --color-put-text: #633806;
-    --color-delete: #fcebeb;
-    --color-delete-text: #791f1f;
-    --color-patch: #eeedfe;
-    --color-patch-text: #3c3489;
+    /* Glass method-tag chips: translucent tint + light text, tuned to read
+       on the app's dark (#05070d) surfaces. */
+    --color-get: rgba(59, 130, 246, 0.15);
+    --color-get-text: #93c5fd;
+    --color-post: rgba(16, 185, 129, 0.15);
+    --color-post-text: #6ee7b7;
+    --color-put: rgba(245, 158, 11, 0.15);
+    --color-put-text: #fcd34d;
+    --color-delete: rgba(239, 68, 68, 0.15);
+    --color-delete-text: #fca5a5;
+    --color-patch: rgba(139, 92, 246, 0.15);
+    --color-patch-text: #c4b5fd;
   }
 
   body {
-    background-color: #f9fafb; /* gray-50 */
-    color: #111827; /* gray-900 */
+    background-color: #05070d;
+    color: #e2e8f0; /* slate-200 */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-family: "Inter", system-ui, sans-serif;
@@ -33,7 +35,7 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(229 231 235); /* gray-200 */
+    background-color: rgba(255, 255, 255, 0.15);
     border-radius: 9999px;
   }
 }

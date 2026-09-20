@@ -203,23 +203,20 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
   return (
     <div className="mx-auto w-full max-w-auto space-y-6 p-4">
       {/* Header */}
-      <div className="rounded-xl border border-gray-200 bg-linear-to-br from-white to-gray-50 p-6">
+      <div className="rounded-xl border border-white/10 bg-linear-to-br from-white/[0.05] to-white/[0.01] p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-2 min-w-0">
             <div className="flex items-center gap-3 min-w-0">
-              <span
-                className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest"
-                style={{ background: "var(--color-delete, #ef4444)" }}
-              >
+              <span className="method-pill method-pill-delete rounded-lg px-3 py-1 text-xs tracking-widest">
                 DELETE
               </span>
-              <code className="truncate font-mono text-sm text-gray-900">
+              <code className="truncate font-mono text-sm text-white">
                 {baseUrl}
                 {endpoint.path}
               </code>
             </div>
             {endpoint.summary && (
-              <p className="text-sm text-gray-600">{endpoint.summary}</p>
+              <p className="text-sm text-slate-400">{endpoint.summary}</p>
             )}
           </div>
         </div>
@@ -227,12 +224,12 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
 
       {/* Parameters Section */}
       {params.length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Parameters</h2>
+            <h2 className="text-lg font-semibold text-white">Parameters</h2>
             <button
               onClick={handleReset}
-              className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-200 disabled:opacity-50"
+              className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
               disabled={
                 isRunning || loading || Object.keys(paramValues).length === 0
               }
@@ -289,8 +286,8 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
 
       {/* Responses Documentation */}
       {Object.keys(responses).length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+          <h2 className="mb-4 text-lg font-semibold text-white">
             Response Status Codes
           </h2>
           <div className="space-y-2">
@@ -300,7 +297,7 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
                 return (
                   <div
                     key={code}
-                    className="flex items-start gap-3 rounded-lg bg-gray-50 p-3"
+                    className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-3"
                   >
                     <span
                       className="rounded px-2.5 py-0.5 text-xs font-bold text-white"
@@ -312,7 +309,7 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
                     >
                       {code}
                     </span>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-slate-300">
                       {resp.description ?? "No description"}
                     </p>
                   </div>
@@ -324,9 +321,9 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
       )}
 
       {/* Request Execution Section */}
-      <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
+      <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6">
         {confirmArmed && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">
+          <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
             This will permanently delete the resource. Click{" "}
             <span className="font-semibold">Confirm Delete</span> to proceed.
           </div>
@@ -336,10 +333,10 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
           <button
             onClick={handleTry}
             disabled={loading || isRunning}
-            className={`inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white transition disabled:opacity-60 sm:flex-none ${
+            className={`inline-flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition disabled:opacity-60 sm:flex-none ${
               confirmArmed
-                ? "bg-red-700 hover:bg-red-800"
-                : "bg-red-600 hover:bg-red-700"
+                ? "bg-red-700 hover:bg-red-600"
+                : "bg-red-600 hover:bg-red-500"
             }`}
             aria-label={
               isRunning
@@ -382,7 +379,7 @@ const DeleteMethod: React.FC<DeleteMethodProps> = ({
           {confirmArmed && !isRunning && (
             <button
               onClick={() => setConfirmArmed(false)}
-              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 px-6 py-2.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
             >
               Cancel
             </button>

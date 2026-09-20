@@ -56,8 +56,8 @@ const MethodRenderer: React.FC<Props> = ({
       );
     default:
       return (
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <p className="text-sm text-gray-500">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+          <p className="text-sm text-slate-400">
             Method <code className="font-mono">{endpoint.method}</code> is not
             yet supported.
           </p>

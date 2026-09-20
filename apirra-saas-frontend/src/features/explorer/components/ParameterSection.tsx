@@ -23,28 +23,28 @@ const ParameterSection: React.FC<ParameterSectionProps> = ({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
         {title}
       </h3>
       {params.map((p, i) => (
         <div
           key={i}
-          className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 transition hover:border-gray-300"
+          className="flex flex-col gap-2 rounded-lg border border-white/10 bg-white/[0.02] p-3 transition hover:border-white/20"
         >
           <div className="flex items-center gap-2">
-            <code className="font-mono text-sm font-semibold text-blue-700">
+            <code className="font-mono text-sm font-semibold text-blue-300">
               {p.name}
             </code>
             {p.required && (
-              <span className="rounded bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
+              <span className="rounded bg-red-500/15 px-2 py-0.5 text-[10px] font-bold text-red-300">
                 REQUIRED
               </span>
             )}
             <div className="ml-auto flex gap-2">
-              <span className="rounded bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+              <span className="rounded bg-blue-500/10 px-2 py-0.5 text-[10px] font-medium text-blue-300">
                 {p.in}
               </span>
-              <span className="rounded bg-gray-200 px-2 py-0.5 text-[10px] font-medium text-gray-700">
+              <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-medium text-slate-300">
                 {(p.schema as OpenAPIV3.SchemaObject | undefined)?.type ??
                   "string"}
               </span>
@@ -60,7 +60,7 @@ const ParameterSection: React.FC<ParameterSectionProps> = ({
           />
 
           {p.description && (
-            <p className="text-xs text-gray-600">{p.description}</p>
+            <p className="text-xs text-slate-400">{p.description}</p>
           )}
         </div>
       ))}

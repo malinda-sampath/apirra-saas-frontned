@@ -220,23 +220,20 @@ const PostMethod: React.FC<PostMethodProps> = ({
   return (
     <div className="mx-auto w-full max-w-auto space-y-6 p-4">
       {/* Header */}
-      <div className="rounded-xl border border-gray-200 bg-linear-to-br from-white to-gray-50 p-6">
+      <div className="rounded-xl border border-white/10 bg-linear-to-br from-white/[0.05] to-white/[0.01] p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-2 min-w-0">
             <div className="flex items-center gap-3 min-w-0">
-              <span
-                className="inline-flex items-center rounded-lg px-3 py-1 text-xs font-bold tracking-widest"
-                style={{ background: "var(--color-post, #3b82f6)" }}
-              >
+              <span className="method-pill method-pill-post rounded-lg px-3 py-1 text-xs tracking-widest">
                 POST
               </span>
-              <code className="truncate font-mono text-sm text-gray-900">
+              <code className="truncate font-mono text-sm text-white">
                 {baseUrl}
                 {endpoint.path}
               </code>
             </div>
             {endpoint.summary && (
-              <p className="text-sm text-gray-600">{endpoint.summary}</p>
+              <p className="text-sm text-slate-400">{endpoint.summary}</p>
             )}
           </div>
         </div>
@@ -244,12 +241,12 @@ const PostMethod: React.FC<PostMethodProps> = ({
 
       {/* Parameters Section */}
       {params.length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Parameters</h2>
+            <h2 className="text-lg font-semibold text-white">Parameters</h2>
             <button
               onClick={handleReset}
-              className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-200 disabled:opacity-50"
+              className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
               disabled={
                 isRunning || loading || Object.keys(paramValues).length === 0
               }
@@ -305,8 +302,8 @@ const PostMethod: React.FC<PostMethodProps> = ({
       )}
 
       {/* Request Body Section */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+        <h2 className="mb-4 text-lg font-semibold text-white">
           Request Body
         </h2>
         <textarea
@@ -315,15 +312,15 @@ const PostMethod: React.FC<PostMethodProps> = ({
           placeholder={'{\n  "key": "value"\n}'}
           rows={10}
           disabled={isRunning || loading}
-          className="min-h-[320px] w-full resize-y overflow-auto rounded-lg border border-gray-300 bg-gray-50 p-4 font-mono text-sm text-gray-800 shadow-sm transition-all disabled:opacity-60"
+          className="min-h-[320px] w-full resize-y overflow-auto rounded-lg border border-white/10 bg-white/5 p-4 font-mono text-sm text-white transition-all placeholder:text-slate-500 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 disabled:opacity-60"
           aria-label="Request body JSON"
         />
       </div>
 
       {/* Responses Documentation */}
       {Object.keys(responses).length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+          <h2 className="mb-4 text-lg font-semibold text-white">
             Response Status Codes
           </h2>
           <div className="space-y-2">
@@ -333,7 +330,7 @@ const PostMethod: React.FC<PostMethodProps> = ({
                 return (
                   <div
                     key={code}
-                    className="flex items-start gap-3 rounded-lg bg-gray-50 p-3"
+                    className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.02] p-3"
                   >
                     <span
                       className="rounded px-2.5 py-0.5 text-xs font-bold text-white"
@@ -345,7 +342,7 @@ const PostMethod: React.FC<PostMethodProps> = ({
                     >
                       {code}
                     </span>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-slate-300">
                       {resp.description ?? "No description"}
                     </p>
                   </div>
@@ -357,12 +354,12 @@ const PostMethod: React.FC<PostMethodProps> = ({
       )}
 
       {/* Request Execution Section */}
-      <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6">
+      <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-6">
         <div className="flex flex-col gap-3 sm:flex-row">
           <button
             onClick={handleTry}
             disabled={loading || isRunning}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60 sm:flex-none"
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 disabled:opacity-60 sm:flex-none"
             aria-label={isRunning ? "Sending request" : "Send request"}
           >
             {loading || isRunning ? (
