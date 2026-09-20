@@ -128,9 +128,20 @@ src/
    auth/account feature before deleting it.
 3. **`PATCH`/`HEAD`/`OPTIONS`** are recognized in the OpenAPI parser and
    type unions but have no method component / `MethodRenderer` case yet.
-4. **Router state, not persisted state**: `/explorer` depends entirely on
-   `location.state.endpoints`/`baseUrl`. A hard refresh or direct link to
-   `/explorer` lands on an empty state with no redirect/guard back to `/`.
+
+~~**Router state, not persisted state**: `/explorer` depends entirely on
+`location.state.endpoints`/`baseUrl`. A hard refresh or direct link to
+`/explorer` lands on an empty state with no redirect/guard back to `/`.~~
+**Fixed** (2026-09-20): `ExplorerPage` now renders `<Navigate to="/" replace />`
+whenever `location.state` has no endpoints (hard refresh, direct link, or
+browser back/forward landing here), instead of showing an empty shell. The
+in-app "back" button was also removed in favor of a "New Spec" button (top
+right of the Explorer header) and a clickable logo, both of which call
+`navigate("/#get-started")` — since the loaded spec only ever lived in router
+state, navigating away without re-passing it is enough to discard it.
+`HomePage` scrolls to `#get-started` on mount when the URL carries that hash,
+since the browser only does that automatically on a full page load, not a
+client-side route change.
 
 ~~**Two conflicting definitions each of `ParsedApiMethod` and
 `ExecutePayload`.**~~ **Fixed** (2026-09-20): consolidated into
