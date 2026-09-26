@@ -206,6 +206,7 @@ const HomePage = () => {
           state: {
             endpoints: parsed,
             baseUrl: requestBaseUrl,
+            spec,
           },
         });
       } else {
