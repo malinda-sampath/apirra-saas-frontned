@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Apirra — API Explorer
 
 ## What this is
@@ -26,8 +30,9 @@ all client-side.
    circular-ref guarding). `ParsedApiMethod` itself is defined in
    `features/explorer/types/index.ts`, not here.
 3. On success, `react-router-dom` navigates to `/explorer`, passing
-   `{ endpoints, baseUrl }` through router `state` (not global state/context —
-   if the user refreshes `/explorer` directly, this data is gone).
+   `{ endpoints, baseUrl, spec }` through router `state` (not global
+   state/context — if the user refreshes `/explorer` directly, this data
+   is gone).
 4. **`pages/ExplorerPage/ExplorerPage.tsx`** — hosts `Sidebar` +
    `MethodRenderer`. Owns `selected` (currently chosen endpoint) and
    `loading`, and defines `handleExecute`, which wraps
@@ -44,6 +49,12 @@ all client-side.
    pattern: param inputs → (body editor for POST/PUT) → send button →
    cURL preview (`CurlGenerator`) → response viewer (`ResponseDisplay`) →
    history (`RequestHistory`) → toasts (`ToastContainer`).
+8. The raw `spec` (not just the parsed `endpoints`) is also passed through
+   the same router `state` from `HomePage`, so `ExplorerPage` can offer a
+   read-only "View Spec" button (top-right of the header) that opens
+   `features/explorer/components/SpecViewerModal.tsx` — an Overview
+   (grouped-by-tag endpoint list) / Raw JSON tab view with copy and
+   download actions. It is only rendered when `spec` is present in state.
 
 ## File structure
 Feature-based: route-level composition lives in `pages/`, all explorer
@@ -77,6 +88,7 @@ src/
 │       │   ├── ResponseDisplay.tsx
 │       │   ├── RequestHistory.tsx
 │       │   ├── ToastContainer.tsx
+│       │   ├── SpecViewerModal.tsx # read-only "View Spec" overlay (Overview + Raw JSON)
 │       │   └── methods/
 │       │       ├── GetMethod.tsx
 │       │       ├── PostMethod.tsx
@@ -159,15 +171,47 @@ hardcoded uppercase literal per method component; it already normalized
 case internally so this is not a behavior change.
 
 ## Commands
-> Scripts below are the standard Vite defaults — check `package.json` and
-> adjust if this project customizes them.
 ```bash
 npm install
-npm run dev        # local dev server
-npm run build       # production build (tsc + vite build)
-npm run preview      # preview a production build
-npm run lint          # eslint
+npm run dev             # local dev server
+npm run build           # production build (tsc -b && vite build)
+npm run preview         # preview a production build
+npm run lint            # eslint .
+npm run test            # vitest run (unit/component tests, single pass)
+npm run test:watch      # vitest, watch mode
+npm run test:coverage   # vitest run --coverage
+npm run test:e2e        # playwright test (spins up its own dev server + mock API)
 ```
+
+Run a single unit test file or test name:
+```bash
+npx vitest run src/features/explorer/components/Sidebar.test.tsx
+npx vitest run -t "groups endpoints by their first tag"
+```
+Run a single e2e spec: `npx playwright test e2e/home.spec.ts`.
+
+### Testing conventions / gotchas
+- **Unit test files are `.test.ts(x)` co-located next to the module they
+  cover** (e.g. `Sidebar.tsx` / `Sidebar.test.tsx`), using Vitest +
+  React Testing Library. Shared factories live in `src/test/factories.ts`.
+- **Vitest's default environment is `node`**, not `jsdom` (set in
+  `vite.config.ts`, for cheaper pure-logic tests). Any test that renders a
+  component must opt in with a `// @vitest-environment jsdom` docblock as
+  the first line of the file — see any existing `*.test.tsx` for the
+  pattern.
+- **`*.test.ts(x)`, `/e2e/`, `/playwright.config.ts`, and `/src/test/` are
+  all git-ignored** (see `.gitignore`) even though they exist in this
+  working tree, are referenced by `package.json` scripts, and their
+  dependencies (`vitest`, `@testing-library/*`, `@playwright/test`) are
+  real `devDependencies`. `git status`/`git add` won't pick up new or
+  edited test files, and a fresh clone of this repo won't have them at
+  all — don't assume `git log`/`git diff` reflects test changes, and don't
+  be surprised if `git status` shows nothing after editing a test.
+- Playwright's e2e suite runs against dedicated port `5174` (not the
+  default `5173`, to avoid clashing with a manually-running dev server)
+  plus a mock API server (`e2e/fixtures/mock-api-server.mjs`) on port
+  `4310`; both are started automatically via `webServer` in
+  `playwright.config.ts`.
 
 ## Deployment
 This project directory (`apirra-saas-frontend/`) is nested one level inside
