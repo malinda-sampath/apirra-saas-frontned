@@ -1,0 +1,279 @@
+import { useEffect, useMemo, useState } from "react";
+import type { OpenAPIV3 } from "openapi-types";
+import type { OpenAPISpec } from "../types";
+import { httpMethods } from "../types";
+
+const METHOD_STYLES: Record<string, string> = {
+  get: "method-pill method-pill-get",
+  post: "method-pill method-pill-post",
+  put: "method-pill method-pill-put",
+  delete: "method-pill method-pill-delete",
+  patch: "method-pill method-pill-patch",
+};
+
+type GroupedOperation = {
+  path: string;
+  method: string;
+  operation: OpenAPIV3.OperationObject;
+};
+
+type Tab = "overview" | "raw";
+
+type Props = {
+  spec: OpenAPISpec;
+  onClose: () => void;
+};
+
+const SpecViewerModal: React.FC<Props> = ({ spec, onClose }) => {
+  const [tab, setTab] = useState<Tab>("overview");
+  const [copied, setCopied] = useState(false);
+
+  // Read-only viewer: closes on Escape like any other dismissible overlay.
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  const rawJson = useMemo(() => JSON.stringify(spec, null, 2), [spec]);
+
+  const groupedByTag = useMemo(() => {
+    const groups: Record<string, GroupedOperation[]> = {};
+
+    Object.entries(spec.paths || {}).forEach(([path, pathItem]) => {
+      if (!pathItem) return;
+
+      httpMethods.forEach((method) => {
+        const operation = (pathItem as Record<string, unknown>)[method] as
+          | OpenAPIV3.OperationObject
+          | undefined;
+        if (!operation) return;
+
+        const tag = operation.tags?.[0] || "default";
+        if (!groups[tag]) groups[tag] = [];
+        groups[tag].push({ path, method, operation });
+      });
+    });
+
+    return groups;
+  }, [spec]);
+
+  const endpointCount = Object.values(groupedByTag).reduce(
+    (sum, ops) => sum + ops.length,
+    0,
+  );
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(rawJson);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard access can be denied by the browser; nothing to recover
+      // from here since this is a convenience action, not a required one.
+    }
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([rawJson], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const fileSlug = (spec.info?.title || "openapi")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+    link.href = url;
+    link.download = `${fileSlug || "openapi"}-spec.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label="OpenAPI specification viewer"
+    >
+      <div
+        onClick={onClose}
+        aria-hidden="true"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      />
+
+      <div className="relative flex max-h-full w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#05070d] shadow-2xl shadow-black/60">
+        {/* HEADER */}
+        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <svg
+                className="h-4 w-4 shrink-0 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.75}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <h2 className="truncate text-sm font-semibold text-white sm:text-base">
+                {spec.info?.title || "API Specification"}
+              </h2>
+              {spec.info?.version && (
+                <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+                  v{spec.info.version}
+                </span>
+              )}
+            </div>
+            {spec.info?.description && (
+              <p className="mt-1 line-clamp-2 max-w-2xl text-xs text-slate-500">
+                {spec.info.description}
+              </p>
+            )}
+          </div>
+
+          <button
+            onClick={onClose}
+            aria-label="Close spec viewer"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-white/10 hover:text-white"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* TABS + ACTIONS */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-white/10 px-5 py-3 sm:px-6">
+          <button
+            onClick={() => setTab("overview")}
+            role="tab"
+            aria-selected={tab === "overview"}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition sm:text-sm ${
+              tab === "overview"
+                ? "bg-blue-500/15 text-blue-300"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setTab("raw")}
+            role="tab"
+            aria-selected={tab === "raw"}
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition sm:text-sm ${
+              tab === "raw"
+                ? "bg-blue-500/15 text-blue-300"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Raw JSON
+          </button>
+
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={handleCopy}
+              className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+            >
+              {copied ? "Copied!" : "Copy JSON"}
+            </button>
+            <button
+              onClick={handleDownload}
+              className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 transition hover:bg-white/10 hover:text-white"
+            >
+              Download
+            </button>
+          </div>
+        </div>
+
+        {/* BODY */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 sm:px-6">
+          {tab === "overview" ? (
+            <div className="space-y-6">
+              {spec.servers && spec.servers.length > 0 && (
+                <div>
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+                    Servers
+                  </p>
+                  <div className="space-y-1.5">
+                    {spec.servers.map((server, i) => (
+                      <code
+                        key={`${server.url}-${i}`}
+                        className="block break-all rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-xs text-slate-300"
+                      >
+                        {server.url}
+                      </code>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-slate-500">
+                {endpointCount} endpoint{endpointCount === 1 ? "" : "s"} across{" "}
+                {Object.keys(groupedByTag).length} tag
+                {Object.keys(groupedByTag).length === 1 ? "" : "s"}
+              </p>
+
+              {Object.entries(groupedByTag).map(([tag, ops]) => (
+                <div key={tag}>
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+                    {tag} ({ops.length})
+                  </p>
+                  <div className="space-y-1.5">
+                    {ops.map(({ path, method, operation }) => (
+                      <div
+                        key={`${method}-${path}`}
+                        className="flex items-start gap-3 rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2"
+                      >
+                        <span
+                          className={`shrink-0 ${
+                            METHOD_STYLES[method] ??
+                            "method-pill bg-white/10 text-slate-300"
+                          }`}
+                        >
+                          {method.toUpperCase()}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <code className="block truncate font-mono text-xs text-slate-200">
+                            {path}
+                          </code>
+                          {operation.summary && (
+                            <p className="mt-0.5 truncate text-[11px] text-slate-500">
+                              {operation.summary}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <pre className="overflow-auto rounded-lg border border-white/10 bg-black/40 p-4 font-mono text-xs text-emerald-400 sm:text-sm">
+              {rawJson}
+            </pre>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SpecViewerModal;
